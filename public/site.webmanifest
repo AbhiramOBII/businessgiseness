@@ -1,0 +1,27 @@
+{
+    "name": "Business Giseness - Founder-First Storytelling Podcast",
+    "short_name": "Business Giseness",
+    "description": "Dive deep into real, raw, unfiltered stories of entrepreneurs who are still building. Business Giseness celebrates founder-first narratives with authentic business insights.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#151828",
+    "theme_color": "#ba933e",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/images/bg-icon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/images/bg-icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["business", "podcast", "entrepreneurship", "education"],
+    "lang": "en-US",
+    "scope": "/"
+}
