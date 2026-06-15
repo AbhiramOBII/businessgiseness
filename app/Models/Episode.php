@@ -69,7 +69,7 @@ class Episode extends Model
         return $this->belongsToMany(Guest::class, 'episode_guest')
                     ->withPivot(['sort_order', 'is_host'])
                     ->withTimestamps()
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**
