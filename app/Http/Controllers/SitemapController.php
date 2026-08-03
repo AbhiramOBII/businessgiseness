@@ -15,23 +15,57 @@ class SitemapController extends Controller
      */
     public function index(Request $request): Response
     {
-        $episodes = Episode::published()
-            ->orderByDesc('published_at')
-            ->get();
+        $episodes  = Episode::published()->orderByDesc('published_at')->get();
+        $guests    = Guest::orderBy('name')->get();
+        $blogPosts = BlogPost::published()->orderByDesc('published_at')->get();
 
-        $guests = Guest::orderBy('name')->get();
+        $xml = new \XMLWriter();
+        $xml->openMemory();
+        $xml->startDocument('1.0', 'UTF-8');
+        $xml->startElement('urlset');
+        $xml->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+        $xml->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
 
-        $blogPosts = BlogPost::published()
-            ->orderByDesc('published_at')
-            ->get();
+        $this->addUrl($xml, route('home'), now()->toAtomString(), 'daily', '1.0');
+        $this->addUrl($xml, route('about-business-giseness-podcast'), now()->startOfMonth()->toAtomString(), 'monthly', '0.8');
+        $this->addUrl($xml, route('episodes.index'), now()->toAtomString(), 'daily', '0.9');
+        $this->addUrl($xml, route('guests.index'), now()->startOfWeek()->toAtomString(), 'weekly', '0.7');
+        $this->addUrl($xml, route('blog.index'), now()->toAtomString(), 'weekly', '0.7');
+        $this->addUrl($xml, route('privacy-policy'), '2025-01-01T00:00:00+00:00', 'yearly', '0.3');
+        $this->addUrl($xml, route('terms-of-use'), '2025-01-01T00:00:00+00:00', 'yearly', '0.3');
+        $this->addUrl($xml, route('disclaimer'), '2025-01-01T00:00:00+00:00', 'yearly', '0.3');
 
-        return response()
-            ->view('sitemap', [
-                'episodes'  => $episodes,
-                'guests'    => $guests,
-                'blogPosts' => $blogPosts,
-                'baseUrl'   => $request->getSchemeAndHttpHost(),
-            ])
-            ->header('Content-Type', 'application/xml');
+        foreach ($episodes as $episode) {
+            $lastMod = ($episode->updated_at ?: $episode->published_at)?->tz('UTC')->toAtomString();
+            $this->addUrl($xml, route('episodes.show', $episode), $lastMod, 'weekly', '0.8');
+        }
+
+        foreach ($guests as $guest) {
+            $lastMod = $guest->updated_at?->tz('UTC')->toAtomString();
+            $this->addUrl($xml, route('guests.show', $guest), $lastMod, 'weekly', '0.6');
+        }
+
+        foreach ($blogPosts as $post) {
+            $lastMod = ($post->updated_at ?: $post->published_at)?->tz('UTC')->toAtomString();
+            $this->addUrl($xml, route('blog.show', $post), $lastMod, 'weekly', '0.7');
+        }
+
+        $xml->endElement();
+        $xml->endDocument();
+
+        return response($xml->outputMemory(), 200)
+            ->header('Content-Type', 'application/xml; charset=utf-8');
+    }
+
+    private function addUrl(\XMLWriter $xml, string $loc, ?string $lastmod, string $changefreq, string $priority): void
+    {
+        $xml->startElement('url');
+        $xml->writeElement('loc', $loc);
+        if ($lastmod) {
+            $xml->writeElement('lastmod', $lastmod);
+        }
+        $xml->writeElement('changefreq', $changefreq);
+        $xml->writeElement('priority', $priority);
+        $xml->endElement();
     }
 }

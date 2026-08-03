@@ -324,7 +324,7 @@ $jsonLd = [
                                     <!-- Gold accent frame -->
                                     <div class="absolute -top-3 -left-3 w-full h-full border-2 border-brand-gold rounded-2xl opacity-30"></div>
                                     <img
-                                        src="{{ asset('images/Abhiram-photo-03.jpg') }}"
+                                        src="{{ asset('images/abhiram-chandramohan-founder-obii-kriationz.webp') }}"
                                         alt="Abhiram Chandramohan - Host of Business Giseness"
                                         class="relative w-full object-cover rounded-2xl"
                                         style="aspect-ratio:4/5; object-position:top;"

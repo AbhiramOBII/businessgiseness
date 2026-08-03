@@ -99,6 +99,15 @@
                 </a>
                 
                 <div class="px-6 py-2 mt-6">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">System</p>
+                </div>
+
+                <a href="{{ route('admin.settings') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.settings*') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
+                    <i class="fas fa-sliders-h mr-3"></i>
+                    Settings
+                </a>
+
+                <div class="px-6 py-2 mt-2">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Website</p>
                 </div>
                 

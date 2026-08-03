@@ -48,6 +48,16 @@
     <!-- Theme colour (mobile browser chrome & PWA) -->
     <meta name="theme-color" content="#ba933e">
     
+    <!-- Dynamic SEO from Settings -->
+    @php
+        $ga4Id          = \App\Models\SiteSetting::get('seo_ga4_id');
+        $gscVerify      = \App\Models\SiteSetting::get('seo_gsc_verification');
+        $defaultOgImage = \App\Models\SiteSetting::get('seo_default_og_image_url', asset('images/bg-icon.png'));
+    @endphp
+    @if($gscVerify)
+    <meta name="google-site-verification" content="{{ $gscVerify }}">
+    @endif
+
     <!-- Additional Head Content -->
     @stack('head')
     
@@ -330,5 +340,16 @@
 
     <!-- Livewire Scripts -->
     @livewireScripts
+
+    @if($ga4Id ?? false)
+    <!-- Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $ga4Id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ $ga4Id }}');
+    </script>
+    @endif
 </body>
 </html>

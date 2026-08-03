@@ -100,6 +100,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('blog/{blogPost}/toggle-published', [\App\Http\Controllers\Admin\BlogController::class, 'togglePublished'])->name('blog.toggle-published');
     Route::post('blog/{blogPost}/duplicate', [\App\Http\Controllers\Admin\BlogController::class, 'duplicate'])->name('blog.duplicate');
     
+    // Settings
+    Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings');
+    Route::post('/settings/seo', [\App\Http\Controllers\Admin\SettingsController::class, 'updateSeo'])->name('settings.seo');
+    Route::post('/settings/password', [\App\Http\Controllers\Admin\SettingsController::class, 'updatePassword'])->name('settings.password');
+    Route::post('/settings/general', [\App\Http\Controllers\Admin\SettingsController::class, 'updateGeneral'])->name('settings.general');
+
     // Newsletter Subscription Management
     Route::get('newsletter-subscriptions', [\App\Http\Controllers\Admin\NewsletterSubscriptionController::class, 'index'])->name('newsletter-subscriptions.index');
     Route::get('newsletter-subscriptions/{newsletterSubscription}', [\App\Http\Controllers\Admin\NewsletterSubscriptionController::class, 'show'])->name('newsletter-subscriptions.show');
