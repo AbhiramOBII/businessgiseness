@@ -259,8 +259,8 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Production Domain</label>
                         <input type="url" name="general_sitemap_domain"
-                            value="{{ old('general_sitemap_domain', $general['general_sitemap_domain'] ?? 'https://businessgiseness.com') }}"
-                            placeholder="https://businessgiseness.com"
+                            value="{{ old('general_sitemap_domain', $general['general_sitemap_domain'] ?? 'https://www.businessgiseness.com') }}"
+                            placeholder="https://www.businessgiseness.com"
                             class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:ring-2 focus:ring-brand-gold focus:border-transparent outline-none transition">
                         @error('general_sitemap_domain')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         <p class="text-xs text-gray-400 mt-1">Used in the robots.txt Sitemap directive. No trailing slash.</p>
