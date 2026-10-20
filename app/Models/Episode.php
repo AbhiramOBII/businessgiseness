@@ -62,6 +62,14 @@ class Episode extends Model
     }
 
     /**
+     * Get formatted publish date
+     */
+    public function getFormattedPublishedAtAttribute()
+    {
+        return $this->published_at ? $this->published_at->format('M d, Y') : null;
+    }
+
+    /**
      * Get the guests that appear in this episode.
      */
     public function guests(): BelongsToMany

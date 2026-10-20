@@ -17,23 +17,6 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-dark': '#151828',
-                        'brand-gold': '#ba933e',
-                        'brand-white': '#FFFFFF'
-                    },
-                    fontFamily: {
-                        'sans': ['Satoshi', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
         body {
             font-family: 'Satoshi', system-ui, sans-serif;

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Disclaimer - Business Giseness')
-@section('meta_description', 'Disclaimer for Business Giseness podcast. Important legal information about our content and services.')
+@section('meta-description', 'Disclaimer for Business Giseness podcast. Important legal information about our content and services.')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-12">

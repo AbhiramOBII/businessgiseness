@@ -39,8 +39,13 @@ class NewsletterSubscriptionController extends Controller
         }
 
         // Sorting
-        $sortBy = $request->get('sort', 'subscribed_at');
-        $sortOrder = $request->get('order', 'desc');
+        $sortBy = $request->get('sort');
+        $sortOrder = $request->get('order') === 'asc' ? 'asc' : 'desc';
+
+        if (!in_array($sortBy, ['subscribed_at', 'email', 'name', 'unsubscribed_at'], true)) {
+            $sortBy = 'subscribed_at';
+        }
+
         $query->orderBy($sortBy, $sortOrder);
 
         $subscriptions = $query->paginate(20)->withQueryString();

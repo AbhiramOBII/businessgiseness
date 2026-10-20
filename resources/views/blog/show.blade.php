@@ -2,7 +2,9 @@
 
 @section('title', $blogPost->meta_title)
 @section('meta-description', $blogPost->meta_description)
+@if($blogPost->meta_keywords)
 @section('meta_keywords', $blogPost->meta_keywords)
+@endif
 
 @push('head')
 <!-- Open Graph Tags -->
@@ -11,7 +13,7 @@
 <meta property="og:image" content="{{ $blogPost->og_image }}">
 <meta property="og:url" content="{{ url()->current() }}">
 <meta property="og:type" content="article">
-<meta property="article:published_time" content="{{ $blogPost->published_at->toISOString() }}">
+<meta property="article:published_time" content="{{ $blogPost->published_at?->toISOString() }}">
 <meta property="article:author" content="Business Giseness">
 <meta property="article:section" content="{{ $blogPost->category }}">
 
@@ -42,7 +44,7 @@
             'url' => asset('images/business-giseness-logo.webp')
         ]
     ],
-    'datePublished' => $blogPost->published_at->toISOString(),
+    'datePublished' => $blogPost->published_at?->toISOString(),
     'dateModified' => $blogPost->updated_at->toISOString(),
     'mainEntityOfPage' => [
         '@type' => 'WebPage',
@@ -88,7 +90,7 @@
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-brand-gold text-brand-dark">
                 {{ $blogPost->category }}
             </span>
-            <time datetime="{{ $blogPost->published_at->toISOString() }}" class="text-gray-600">
+            <time datetime="{{ $blogPost->published_at?->toISOString() }}" class="text-gray-600">
                 {{ $blogPost->formatted_published_at }}
             </time>
         </div>

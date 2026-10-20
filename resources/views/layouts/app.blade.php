@@ -11,20 +11,30 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/bg-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     
-    <title>@yield('title', 'Business Giseness - Founder-First Storytelling Podcast')</title>
-    
+    {{-- Default SEO from Admin > Settings; pages override these with their own sections --}}
+    @php
+        $seoTitle       = \App\Models\SiteSetting::get('seo_site_title') ?: 'Business Giseness - Founder-First Storytelling Podcast';
+        $seoDescription = \App\Models\SiteSetting::get('seo_meta_description') ?: 'Dive deep into real, raw, unfiltered stories of entrepreneurs who are still building. Business Giseness celebrates founder-first narratives with authentic business insights.';
+        $seoRobots      = \App\Models\SiteSetting::get('seo_robots') ?: 'index, follow';
+        $defaultOgImage = \App\Models\SiteSetting::get('seo_default_og_image_url') ?: asset('images/bg-icon.png');
+        $ga4Id          = \App\Models\SiteSetting::get('seo_ga4_id');
+        $gscVerify      = \App\Models\SiteSetting::get('seo_gsc_verification');
+    @endphp
+
+    <title>@yield('title', $seoTitle)</title>
+
     <!-- Meta Description -->
-    <meta name="description" content="@yield('meta-description', 'Dive deep into real, raw, unfiltered stories of entrepreneurs who are still building. Business Giseness celebrates founder-first narratives with authentic business insights.')">
+    <meta name="description" content="@yield('meta-description', $seoDescription)">
     <meta name="keywords" content="@yield('meta_keywords', 'business podcast, entrepreneur stories, startup podcast, founder interviews, business giseness, entrepreneurship, business strategy, startup stories')">
     <meta name="author" content="Abhiram Chandramohan">
-    <meta name="robots" content="index, follow">
-    
+    <meta name="robots" content="{{ $seoRobots }}">
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="@yield('og_url', url()->current())">
-    <meta property="og:title" content="@yield('og_title', 'Business Giseness - Founder-First Storytelling Podcast')">
-    <meta property="og:description" content="@yield('og_description', 'Dive deep into real, raw, unfiltered stories of entrepreneurs who are still building. Authentic founder narratives and business insights.')">
-    <meta property="og:image" content="@yield('og_image', asset('images/bg-icon.png'))">
+    <meta property="og:title" content="@yield('og_title', $seoTitle)">
+    <meta property="og:description" content="@yield('og_description', $seoDescription)">
+    <meta property="og:image" content="@yield('og_image', $defaultOgImage)">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Business Giseness">
@@ -33,9 +43,9 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="@yield('twitter_url', url()->current())">
-    <meta name="twitter:title" content="@yield('twitter_title', 'Business Giseness - Founder-First Storytelling Podcast')">
-    <meta name="twitter:description" content="@yield('twitter_description', 'Dive deep into real, raw, unfiltered stories of entrepreneurs who are still building. Authentic founder narratives and business insights.')">
-    <meta name="twitter:image" content="@yield('twitter_image', asset('images/bg-icon.png'))">
+    <meta name="twitter:title" content="@yield('twitter_title', $seoTitle)">
+    <meta name="twitter:description" content="@yield('twitter_description', $seoDescription)">
+    <meta name="twitter:image" content="@yield('twitter_image', $defaultOgImage)">
     <meta name="twitter:creator" content="@abhiramchandram">
     <meta name="twitter:site" content="@businessgiseness">
     
@@ -48,12 +58,6 @@
     <!-- Theme colour (mobile browser chrome & PWA) -->
     <meta name="theme-color" content="#ba933e">
     
-    <!-- Dynamic SEO from Settings -->
-    @php
-        $ga4Id          = \App\Models\SiteSetting::get('seo_ga4_id');
-        $gscVerify      = \App\Models\SiteSetting::get('seo_gsc_verification');
-        $defaultOgImage = \App\Models\SiteSetting::get('seo_default_og_image_url', asset('images/bg-icon.png'));
-    @endphp
     @if($gscVerify)
     <meta name="google-site-verification" content="{{ $gscVerify }}">
     @endif
@@ -77,24 +81,7 @@
     
     <!-- Livewire Styles -->
     @livewireStyles
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-dark': '#151828',
-                        'brand-gold': '#ba933e',
-                        'brand-white': '#FFFFFF'
-                    },
-                    fontFamily: {
-                        'sans': ['Satoshi', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
+
     <style>
         :root {
             --brand-dark: #151828;

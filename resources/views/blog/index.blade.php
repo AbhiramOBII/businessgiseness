@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Blog - Business Giseness')
-@section('meta_description', 'Read the latest insights, stories, and tips from Business Giseness. Discover entrepreneurship, business strategy, and success stories from our podcast guests.')
+@section('meta-description', 'Read the latest insights, stories, and tips from Business Giseness. Discover entrepreneurship, business strategy, and success stories from our podcast guests.')
 
 @section('content')
 <!-- Hero Section -->

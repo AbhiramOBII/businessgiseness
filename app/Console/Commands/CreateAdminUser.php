@@ -56,11 +56,12 @@ class CreateAdminUser extends Command
 
         // Create the user
         try {
-            $user = User::create([
+            $user = User::forceCreate([
                 'name' => $name,
                 'email' => $email,
                 'email_verified_at' => now(),
                 'password' => Hash::make($password),
+                'is_admin' => true,
             ]);
 
             $this->info('Admin user created successfully!');

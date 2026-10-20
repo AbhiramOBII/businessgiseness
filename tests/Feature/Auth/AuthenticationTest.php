@@ -10,11 +10,11 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_screen_can_be_rendered(): void
+    public function test_login_redirects_to_admin_login(): void
     {
-        $response = $this->get('/login');
+        $this->get('/login')->assertRedirect(route('admin.login'));
 
-        $response->assertStatus(200);
+        $this->get('/admin/login')->assertOk();
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

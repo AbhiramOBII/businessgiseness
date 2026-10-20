@@ -150,7 +150,7 @@ $jsonLd = [
                             <div class="overflow-hidden">
                                 <div
                                     class="flex transition-transform duration-500 ease-in-out"
-                                    :style="\`transform: translateX(-\${current * slideWidth}%)\`"
+                                    :style="`transform: translateX(-${current * slideWidth}%)`"
                                 >
                                     @foreach($latestEpisodes as $episode)
                                         <div class="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-4">

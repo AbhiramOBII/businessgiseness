@@ -12,6 +12,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 Route::get('/about-business-giseness-podcast', function () {
     return view('about');
@@ -45,15 +46,6 @@ Route::get('/blog/{blogPost:slug}', [\App\Http\Controllers\BlogController::class
 // Newsletter Routes
 Route::post('/newsletter/subscribe', [\App\Http\Controllers\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 Route::post('/newsletter/unsubscribe', [\App\Http\Controllers\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
-
-// Test route to verify guest access works without sessions
-Route::get('/test-guest', function () {
-    return response()->json([
-        'message' => 'Guest access working perfectly!',
-        'is_guest' => !auth()->check(),
-        'timestamp' => now()->toDateTimeString()
-    ]);
-})->name('test-guest');
 
 // User Dashboard (from Breeze)
 Route::get('/dashboard', function () {

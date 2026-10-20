@@ -5,11 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\Episode;
 use App\Models\Guest;
 use App\Models\BlogPost;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
 {
+    /**
+     * Serve robots.txt, pointing the Sitemap directive at the domain set in Admin > Settings.
+     */
+    public function robots(): Response
+    {
+        $domain = rtrim(SiteSetting::get('general_sitemap_domain') ?: url('/'), '/');
+
+        $lines = [
+            'User-agent: *',
+            'Allow: /',
+            '',
+            'Disallow: /admin',
+            'Disallow: /admin/',
+            'Disallow: /login',
+            'Disallow: /password',
+            'Disallow: /profile',
+            'Disallow: /dashboard',
+            '',
+            "Sitemap: {$domain}/sitemap.xml",
+        ];
+
+        return response(implode("\n", $lines) . "\n", 200)
+            ->header('Content-Type', 'text/plain; charset=utf-8');
+    }
+
     /**
      * Generate the XML sitemap for public pages.
      */

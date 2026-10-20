@@ -42,16 +42,16 @@ class BlogController extends Controller
         }
 
         // Sort options
-        $sortBy = $request->get('sort', 'created_at');
-        $sortOrder = $request->get('order', 'desc');
-        
-        if ($sortBy === 'views') {
-            $query->orderBy('views_count', $sortOrder);
-        } elseif ($sortBy === 'published_at') {
-            $query->orderBy('published_at', $sortOrder);
-        } else {
-            $query->orderBy($sortBy, $sortOrder);
-        }
+        $sortColumns = [
+            'created_at' => 'created_at',
+            'published_at' => 'published_at',
+            'title' => 'title',
+            'views' => 'views_count',
+        ];
+        $sortBy = $sortColumns[$request->get('sort')] ?? 'created_at';
+        $sortOrder = $request->get('order') === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($sortBy, $sortOrder);
 
         $blogPosts = $query->paginate(15)->withQueryString();
         $categories = BlogPost::getCategories();

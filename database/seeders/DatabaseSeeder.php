@@ -15,9 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
+        // Create admin user and default site settings
         $this->call([
             AdminUserSeeder::class,
+            SiteSettingsSeeder::class,
         ]);
 
         // Uncomment below to create test users

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Privacy Policy - Business Giseness')
-@section('meta_description', 'Privacy Policy for Business Giseness podcast. Learn how we collect, use, and protect your personal information.')
+@section('meta-description', 'Privacy Policy for Business Giseness podcast. Learn how we collect, use, and protect your personal information.')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-12">

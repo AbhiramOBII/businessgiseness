@@ -22,8 +22,10 @@ class GuestController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->get('search');
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('short_description', 'like', "%{$search}%");
+            });
         }
 
         // Filter by featured status
@@ -32,9 +34,13 @@ class GuestController extends Controller
         }
 
         // Sort options
-        $sortBy = $request->get('sort', 'sort_order');
-        $sortDirection = $request->get('direction', 'asc');
-        
+        $sortBy = $request->get('sort');
+        $sortDirection = $request->get('direction') === 'desc' ? 'desc' : 'asc';
+
+        if (!in_array($sortBy, ['sort_order', 'name', 'created_at', 'episode_count'], true)) {
+            $sortBy = 'sort_order';
+        }
+
         if ($sortBy === 'episode_count') {
             $query->withCount('episodes')->orderBy('episodes_count', $sortDirection);
         } else {

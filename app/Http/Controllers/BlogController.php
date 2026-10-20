@@ -12,7 +12,7 @@ class BlogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = BlogPost::query();
+        $query = BlogPost::published();
 
         // Search functionality
         if ($request->filled('search')) {
@@ -31,7 +31,7 @@ class BlogController extends Controller
 
         // Sort options
         $sortBy = $request->get('sort', 'published_at');
-        $sortOrder = $request->get('order', 'desc');
+        $sortOrder = $request->get('order') === 'asc' ? 'asc' : 'desc';
         
         if ($sortBy === 'views') {
             $query->orderBy('views_count', $sortOrder);
@@ -52,15 +52,18 @@ class BlogController extends Controller
      */
     public function show(BlogPost $blogPost)
     {
-        // Show all posts regardless of published status
-
-        // Increment view count
-        $blogPost->incrementViews();
+        // Drafts and scheduled posts are only visible to admins (for previewing)
+        if (!$blogPost->isPublished()) {
+            abort_unless(auth()->user()?->is_admin, 404);
+        } else {
+            $blogPost->incrementViews();
+        }
 
         // Get related posts
-        $relatedPosts = BlogPost::where('category', $blogPost->category)
+        $relatedPosts = BlogPost::published()
+            ->where('category', $blogPost->category)
             ->where('id', '!=', $blogPost->id)
-            ->orderBy('created_at', 'desc')
+            ->latest('published_at')
             ->limit(3)
             ->get();
 
