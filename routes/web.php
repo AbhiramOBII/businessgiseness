@@ -13,10 +13,13 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+Route::get('/llms.txt', [SitemapController::class, 'llms'])->name('llms');
 
 Route::get('/about-business-giseness-podcast', function () {
     return view('about');
 })->name('about-business-giseness-podcast');
+
+Route::get('/kannada-business-podcast', [HomeController::class, 'kannadaPodcast'])->name('kannada-business-podcast');
 
 // Legal Pages
 Route::get('/privacy-policy', function () {

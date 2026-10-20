@@ -8,8 +8,18 @@ use Illuminate\Support\Str;
 
 class Episode extends Model
 {
+    /**
+     * Episode languages: code => label. Codes double as schema.org inLanguage values.
+     */
+    public const LANGUAGES = [
+        'kn' => 'Kannada',
+        'en' => 'English',
+        'both' => 'Kannada & English',
+    ];
+
     protected $fillable = [
         'title',
+        'language',
         'slug',
         'thumbnail',
         'youtube_link',
@@ -67,6 +77,59 @@ class Episode extends Model
     public function getFormattedPublishedAtAttribute()
     {
         return $this->published_at ? $this->published_at->format('M d, Y') : null;
+    }
+
+    /**
+     * Scope for episodes in a language (bilingual episodes match both)
+     */
+    public function scopeInLanguage($query, string $language)
+    {
+        return $query->whereIn('language', [$language, 'both']);
+    }
+
+    /**
+     * Get the human-readable language label
+     */
+    public function getLanguageLabelAttribute(): ?string
+    {
+        return self::LANGUAGES[$this->language] ?? null;
+    }
+
+    /**
+     * Get the schema.org inLanguage value(s)
+     */
+    public function getSchemaLanguageAttribute(): array|string|null
+    {
+        return match ($this->language) {
+            'kn' => 'kn',
+            'en' => 'en',
+            'both' => ['kn', 'en'],
+            default => null,
+        };
+    }
+
+    /**
+     * Get the 11-character YouTube video ID from the episode link
+     */
+    public function getYoutubeIdAttribute(): ?string
+    {
+        if ($this->youtube_link && preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $this->youtube_link, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the best available image: uploaded thumbnail, else the YouTube thumbnail
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if ($this->thumbnail_url) {
+            return $this->thumbnail_url;
+        }
+
+        return $this->youtube_id ? "https://i.ytimg.com/vi/{$this->youtube_id}/hqdefault.jpg" : null;
     }
 
     /**

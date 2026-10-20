@@ -10,13 +10,17 @@ class EpisodeController extends Controller
     /**
      * Display a listing of published episodes.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $episodes = Episode::published()
-            ->latest('published_at')
-            ->paginate(12);
+        $language = in_array($request->get('language'), ['kn', 'en'], true) ? $request->get('language') : null;
 
-        return view('episodes.index', compact('episodes'));
+        $episodes = Episode::published()
+            ->when($language, fn ($query) => $query->inLanguage($language))
+            ->latest('published_at')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('episodes.index', compact('episodes', 'language'));
     }
 
     /**

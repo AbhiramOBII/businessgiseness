@@ -43,6 +43,22 @@
                         @enderror
                     </div>
 
+                    <!-- Language -->
+                    <div>
+                        <label for="language" class="block text-sm font-medium text-gray-700 mb-2">Episode Language</label>
+                        <select id="language" name="language"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-colors duration-200">
+                            <option value="">Not set</option>
+                            @foreach(\App\Models\Episode::LANGUAGES as $code => $label)
+                                <option value="{{ $code }}" @selected(old('language') === $code)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-gray-500 text-xs mt-1">Shown on the episode page and used by search engines to surface Kannada episodes.</p>
+                        @error('language')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- YouTube Link -->
                     <div>
                         <label for="youtube_link" class="block text-sm font-medium text-gray-700 mb-2">YouTube Link</label>

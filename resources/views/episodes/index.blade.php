@@ -1,30 +1,56 @@
 @extends('layouts.app')
 
-@section('title', 'All Episodes - Business Giseness Podcast')
-@section('meta-description', 'Explore all episodes of Business Giseness — the bilingual founder podcast in English & Kannada. Real stories, raw conversations, and hard-won business insights from founders still in the trenches.')
-@section('meta_keywords', 'business giseness episodes, founder podcast episodes, Kannada business podcast, entrepreneur podcast India, startup stories episodes')
+@php
+    $pageTitle = match ($language) {
+        'kn' => 'Kannada Podcast Episodes — Business Giseness | Kannada Business Podcast',
+        'en' => 'English Podcast Episodes — Business Giseness',
+        default => 'All Episodes — Business Giseness | Kannada Business Podcast',
+    };
+    $pageDescription = match ($language) {
+        'kn' => 'Watch Business Giseness episodes in Kannada — honest conversations with Karnataka\'s founders and entrepreneurs about building a business. ಕನ್ನಡದ ಉದ್ಯಮಿಗಳ ನಿಜ ಕಥೆಗಳು.',
+        'en' => 'Business Giseness episodes in English — founder stories from Bengaluru and Karnataka about startups, growth, struggle and the lessons behind building something meaningful.',
+        default => 'Every episode of Business Giseness, the Kannada business podcast from Bengaluru. Real founder stories from Karnataka in Kannada & English — startups, family businesses, growth and hard-won lessons.',
+    };
+    $canonical = $language ? route('episodes.index', ['language' => $language]) : route('episodes.index');
+@endphp
+@section('title', $pageTitle)
+@section('meta-description', $pageDescription)
+@section('meta_keywords', 'business giseness episodes, Kannada business podcast episodes, Kannada podcast, founder interviews Karnataka, Bengaluru entrepreneurs, startup stories in Kannada')
 @section('og_type', 'website')
-@section('og_title', 'All Episodes — Business Giseness Podcast')
-@section('og_description', 'Browse every episode of Business Giseness. Real founder stories in English and Kannada — no filters, no fluff.')
-@section('canonical_url', route('episodes.index'))
+@section('og_title', $pageTitle)
+@section('og_description', $pageDescription)
+@section('canonical_url', $episodes->currentPage() > 1 ? $canonical . (str_contains($canonical, '?') ? '&' : '?') . 'page=' . $episodes->currentPage() : $canonical)
 
 @push('head')
-<script type="application/ld+json">
-{!! json_encode([
-    '@context'    => 'https://schema.org',
-    '@type'       => 'PodcastSeries',
-    'name'        => 'Business Giseness',
-    'description' => 'A bilingual podcast show in English and Kannada featuring real founder stories, honest conversations about business, struggle, growth and the journey behind building something meaningful.',
-    'url'         => route('episodes.index'),
-    'inLanguage'  => ['en', 'kn'],
-    'author'      => [
-        '@type' => 'Person',
-        'name'  => 'Abhiram Chandramohan',
-        'url'   => route('about-business-giseness-podcast'),
+<script type="application/ld+json">{!! \App\Support\Seo::json([
+    '@context'   => 'https://schema.org',
+    '@type'      => 'CollectionPage',
+    'name'       => $pageTitle,
+    'description'=> $pageDescription,
+    'url'        => $canonical,
+    'isPartOf'   => ['@id' => \App\Support\Seo::id('website')],
+    'about'      => ['@id' => \App\Support\Seo::id('podcast')],
+    'inLanguage' => $language === 'en' ? 'en' : ($language === 'kn' ? 'kn' : ['kn', 'en']),
+    'mainEntity' => [
+        '@type' => 'ItemList',
+        'numberOfItems' => $episodes->total(),
+        'itemListElement' => $episodes->values()->map(fn ($episode, $i) => [
+            '@type'    => 'ListItem',
+            'position' => $episodes->firstItem() + $i,
+            'url'      => route('episodes.show', $episode),
+            'name'     => $episode->title,
+        ])->all(),
     ],
-    'numberOfEpisodes' => \App\Models\Episode::published()->count(),
-], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
-</script>
+]) !!}</script>
+<script type="application/ld+json">{!! \App\Support\Seo::json([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => array_values(array_filter([
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Episodes', 'item' => route('episodes.index')],
+        $language ? ['@type' => 'ListItem', 'position' => 3, 'name' => \App\Models\Episode::LANGUAGES[$language] . ' episodes', 'item' => $canonical] : null,
+    ])),
+]) !!}</script>
 @endpush
 
 @section('content')
@@ -34,22 +60,25 @@
         <div class="absolute inset-0 bg-gradient-to-r from-brand-dark/80 to-gray-800/80"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="text-center">
+                <p class="text-brand-gold text-xs font-semibold uppercase tracking-[0.2em] mb-3">Kannada Business Podcast</p>
                 <h1 class="text-4xl md:text-5xl font-bold mb-4">
-                    Podcast Episodes
+                    @if($language === 'kn')
+                        Kannada Podcast Episodes
+                    @elseif($language === 'en')
+                        English Podcast Episodes
+                    @else
+                        Business Giseness Episodes
+                    @endif
                 </h1>
                 <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                    Dive deep into the world of business with our comprehensive collection of podcast episodes. 
-                    Learn from industry experts, successful entrepreneurs, and thought leaders.
+                    Honest, long-form conversations with Karnataka's founders and entrepreneurs — in Kannada and English.
+                    The struggles, decisions and lessons behind building a business.
                 </p>
+                <p lang="kn" class="mt-3 text-lg text-gray-400">{{ \App\Support\Seo::TAGLINE_KN }}</p>
                 <div class="mt-8 flex justify-center items-center space-x-6">
                     <div class="text-center">
                         <div class="text-3xl font-bold text-brand-gold">{{ $episodes->total() }}</div>
-                        <div class="text-sm text-gray-300">Total Episodes</div>
-                    </div>
-                    <div class="w-px h-12 bg-gray-600"></div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-brand-gold">{{ \App\Models\Episode::published()->count() }}</div>
-                        <div class="text-sm text-gray-300">Published</div>
+                        <div class="text-sm text-gray-300">{{ $language ? \App\Models\Episode::LANGUAGES[$language] . ' episodes' : 'Episodes' }}</div>
                     </div>
                 </div>
             </div>
@@ -58,6 +87,17 @@
 
     <!-- Episodes Grid -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Language filter -->
+        <nav class="mb-8 flex flex-wrap items-center gap-2" aria-label="Filter episodes by language">
+            @foreach(['' => 'All episodes', 'kn' => 'Kannada', 'en' => 'English'] as $code => $label)
+                <a href="{{ $code ? route('episodes.index', ['language' => $code]) : route('episodes.index') }}"
+                   @if(($language ?? '') === $code) aria-current="page" @endif
+                   class="px-4 py-2 rounded-full text-sm font-semibold border transition-colors {{ ($language ?? '') === $code ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white text-gray-700 border-gray-200 hover:border-brand-gold hover:text-brand-dark' }}">
+                    {{ $label }}
+                </a>
+            @endforeach
+        </nav>
+
         @if($episodes->count() > 0)
             <!-- Filter/Sort Section -->
             <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
@@ -65,8 +105,7 @@
                     <h2 class="text-2xl font-bold text-gray-900">Latest Episodes</h2>
                     <p class="text-gray-600">{{ $episodes->total() }} episodes available</p>
                 </div>
-                
-                <!-- Future: Add search and filter options here -->
+
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-500">Showing {{ $episodes->firstItem() }}-{{ $episodes->lastItem() }} of {{ $episodes->total() }}</span>
                 </div>
@@ -78,9 +117,10 @@
                     <article class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
                         <!-- Episode Thumbnail -->
                         <div class="aspect-video bg-gray-200 relative overflow-hidden">
-                            @if($episode->thumbnail)
-                                <img src="{{ $episode->thumbnail_url }}" 
-                                     alt="{{ $episode->title }}" 
+                            @if($episode->image_url)
+                                <img src="{{ $episode->image_url }}"
+                                     alt="{{ $episode->title }}"
+                                     loading="lazy"
                                      class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-gold to-yellow-600">
@@ -101,10 +141,13 @@
                             @endif
                             
                             <!-- Episode Duration/Date Overlay -->
-                            <div class="absolute bottom-3 left-3">
+                            <div class="absolute bottom-3 left-3 flex gap-2">
                                 <span class="bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
                                     {{ $episode->published_at->format('M d, Y') }}
                                 </span>
+                                @if($episode->language_label)
+                                    <span class="bg-brand-gold text-brand-dark text-xs font-semibold px-2 py-1 rounded">{{ $episode->language_label }}</span>
+                                @endif
                             </div>
                         </div>
 
@@ -177,14 +220,18 @@
                 <p class="text-xl text-gray-300 mb-8">
                     Subscribe to stay updated with our latest business insights and entrepreneurial stories.
                 </p>
+                @php $socials = \App\Support\Seo::socials(); @endphp
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                    <!-- Future: Add subscription links -->
-                    <a href="#" class="bg-brand-gold hover:bg-yellow-600 text-brand-dark font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
-                        <i class="fas fa-rss mr-2"></i>Subscribe to RSS
-                    </a>
-                    <a href="#" class="border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
-                        <i class="fab fa-spotify mr-2"></i>Listen on Spotify
-                    </a>
+                    @isset($socials['youtube'])
+                        <a href="{{ $socials['youtube'] }}" target="_blank" rel="noopener noreferrer" class="bg-brand-gold hover:bg-yellow-600 text-brand-dark font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <i class="fab fa-youtube mr-2"></i>Subscribe on YouTube
+                        </a>
+                    @endisset
+                    @isset($socials['spotify'])
+                        <a href="{{ $socials['spotify'] }}" target="_blank" rel="noopener noreferrer" class="border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <i class="fab fa-spotify mr-2"></i>Listen on Spotify
+                        </a>
+                    @endisset
                 </div>
             </div>
         </div>

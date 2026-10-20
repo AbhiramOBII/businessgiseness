@@ -1,27 +1,27 @@
 @extends('layouts.app')
 
-@section('title', $blogPost->meta_title)
+@section('title', str_contains($blogPost->meta_title, 'Business Giseness') ? $blogPost->meta_title : $blogPost->meta_title . ' | Business Giseness')
 @section('meta-description', $blogPost->meta_description)
 @if($blogPost->meta_keywords)
 @section('meta_keywords', $blogPost->meta_keywords)
 @endif
+@section('og_type', 'article')
+@section('og_title', $blogPost->og_title)
+@section('og_description', $blogPost->og_description)
+@section('og_image', $blogPost->og_image)
+@section('og_url', route('blog.show', $blogPost))
+@section('twitter_title', $blogPost->twitter_title)
+@section('twitter_description', $blogPost->twitter_description)
+@section('twitter_image', $blogPost->twitter_image)
+@section('canonical_url', route('blog.show', $blogPost))
 
 @push('head')
-<!-- Open Graph Tags -->
-<meta property="og:title" content="{{ $blogPost->og_title }}">
-<meta property="og:description" content="{{ $blogPost->og_description }}">
-<meta property="og:image" content="{{ $blogPost->og_image }}">
-<meta property="og:url" content="{{ url()->current() }}">
-<meta property="og:type" content="article">
-<meta property="article:published_time" content="{{ $blogPost->published_at?->toISOString() }}">
-<meta property="article:author" content="Business Giseness">
+@if($blogPost->published_at)
+<meta property="article:published_time" content="{{ $blogPost->published_at->toIso8601String() }}">
+@endif
+<meta property="article:modified_time" content="{{ $blogPost->updated_at->toIso8601String() }}">
+<meta property="article:author" content="{{ \App\Support\Seo::HOST_NAME }}">
 <meta property="article:section" content="{{ $blogPost->category }}">
-
-<!-- Twitter Card Tags -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ $blogPost->twitter_title }}">
-<meta name="twitter:description" content="{{ $blogPost->twitter_description }}">
-<meta name="twitter:image" content="{{ $blogPost->twitter_image }}">
 
 <!-- JSON-LD Structured Data -->
 <script type="application/ld+json">
@@ -33,17 +33,14 @@
     'image' => $blogPost->thumbnail_url,
     'author' => [
         '@type' => 'Person',
-        'name'  => 'Abhiram Chandramohan',
+        '@id'   => \App\Support\Seo::id('host'),
+        'name'  => \App\Support\Seo::HOST_NAME,
         'url'   => route('about-business-giseness-podcast'),
     ],
-    'publisher' => [
-        '@type' => 'Organization',
-        'name' => 'Business Giseness',
-        'logo' => [
-            '@type' => 'ImageObject',
-            'url' => asset('images/business-giseness-logo.webp')
-        ]
-    ],
+    'publisher' => ['@id' => \App\Support\Seo::id('organization')],
+    'isPartOf' => ['@id' => \App\Support\Seo::id('website')],
+    'inLanguage' => 'en',
+    'keywords' => $blogPost->meta_keywords,
     'datePublished' => $blogPost->published_at?->toISOString(),
     'dateModified' => $blogPost->updated_at->toISOString(),
     'mainEntityOfPage' => [

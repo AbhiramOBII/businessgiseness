@@ -1,7 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Blog - Business Giseness')
-@section('meta-description', 'Read the latest insights, stories, and tips from Business Giseness. Discover entrepreneurship, business strategy, and success stories from our podcast guests.')
+@section('title', 'Blog — Business Lessons from Karnataka\'s Founders | Business Giseness')
+@section('meta-description', 'Business insights, founder lessons and startup stories from the conversations on Business Giseness, the Kannada business podcast from Bengaluru.')
+@section('canonical_url', route('blog.index'))
+
+@push('head')
+<script type="application/ld+json">{!! \App\Support\Seo::json([
+    '@context' => 'https://schema.org',
+    '@type' => 'Blog',
+    'name' => 'Business Giseness Blog',
+    'url' => route('blog.index'),
+    'description' => 'Business insights, founder lessons and startup stories from the conversations on Business Giseness.',
+    'isPartOf' => ['@id' => \App\Support\Seo::id('website')],
+    'publisher' => ['@id' => \App\Support\Seo::id('organization')],
+    'inLanguage' => 'en',
+]) !!}</script>
+@endpush
 
 @section('content')
 <!-- Hero Section -->

@@ -42,11 +42,18 @@ php artisan admin:create-user --name="Jane Doe" --email="jane@example.com"
 |---|---|
 | `/` | Home (latest published episodes & posts) |
 | `/about-business-giseness-podcast` | About |
-| `/episodes`, `/episodes/{slug}` | Episodes |
+| `/kannada-business-podcast` | Landing page for "Kannada business podcast" searches |
+| `/episodes`, `/episodes/{slug}` | Episodes (`?language=kn` / `?language=en` filters) |
 | `/guests`, `/guests/{slug}` | Guests |
 | `/blog`, `/blog/{slug}` | Blog (drafts are visible only to logged-in admins) |
 | `/privacy-policy`, `/terms-of-use`, `/disclaimer` | Legal |
-| `/sitemap.xml`, `/robots.txt` | Generated dynamically |
+| `/sitemap.xml`, `/robots.txt`, `/llms.txt` | Generated dynamically (`llms.txt` is a Markdown briefing for AI assistants) |
+
+## SEO / AEO / GEO
+
+`app/Support/Seo.php` is the single source of truth for how the show describes itself: name (incl. Kannada ಬಿಸಿನೆಸ್ ಗಿಸಿನೆಸ್), positioning summary, host, social profiles, FAQs and the sitewide JSON-LD graph (Organization, WebSite, PodcastSeries, host Person). Pages link to that graph by `@id`. The FAQ (`partials/faq.blade.php`) renders visibly and as `FAQPage` schema from the same data, and `/llms.txt` reuses it too — edit facts in one place.
+
+Set each episode's **language** (Kannada / English / both) in the admin — it drives the language filter, the badge on episode pages and `inLanguage` in schema.
 
 ## Code layout
 

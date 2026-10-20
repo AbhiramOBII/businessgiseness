@@ -1,32 +1,33 @@
 @extends('layouts.app')
 
-@section('title', 'Podcast Guests - Business Giseness Podcast')
-@section('meta-description', 'Meet the inspiring guests who have shared their expertise on the Business Giseness Podcast. Discover entrepreneurs, business leaders, and industry experts.')
+@section('title', 'Guests — Founders & Entrepreneurs from Karnataka | Business Giseness')
+@section('meta-description', 'Meet the founders, creators and business leaders who have shared their stories on Business Giseness, the Kannada business podcast from Bengaluru.')
 
 @push('head')
 <script type="application/ld+json">
 {!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'CollectionPage',
-    'name' => 'Podcast Guests - Business Giseness Podcast',
-    'description' => 'Meet the inspiring guests who have shared their expertise on the Business Giseness Podcast.',
+    'name' => 'Guests on Business Giseness',
+    'isPartOf' => ['@id' => \App\Support\Seo::id('website')],
+    'about' => ['@id' => \App\Support\Seo::id('podcast')],
+    'description' => 'Founders, creators and business leaders who have shared their stories on Business Giseness, the Kannada business podcast.',
     'url' => url()->current(),
     'mainEntity' => [
         '@type' => 'ItemList',
         'numberOfItems' => $guests->total(),
-        'itemListElement' => $guests->take(10)->map(function($guest, $index) {
-            $item = [
+        'itemListElement' => $guests->take(10)->values()->map(function($guest, $index) {
+            $person = [
                 '@type' => 'Person',
-                'position' => $index + 1,
                 'name' => $guest->name,
-                'description' => $guest->short_description ?: 'Guest on Business Giseness Podcast',
+                'description' => $guest->short_description ?: 'Guest on Business Giseness',
                 'url' => route('guests.show', $guest)
             ];
             if ($guest->photo_url) {
-                $item['image'] = $guest->photo_url;
+                $person['image'] = $guest->photo_url;
             }
-            return $item;
-        })->values()
+            return ['@type' => 'ListItem', 'position' => $index + 1, 'item' => $person];
+        })
     ]
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
 </script>

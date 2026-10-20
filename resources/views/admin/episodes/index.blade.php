@@ -59,6 +59,11 @@
                                                 @if($episode->youtube_link)
                                                     <i class="fab fa-youtube text-red-600" title="Has YouTube link"></i>
                                                 @endif
+                                                @if($episode->language_label)
+                                                    <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{{ $episode->language_label }}</span>
+                                                @else
+                                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700" title="Set the language when editing this episode">Language not set</span>
+                                                @endif
                                             </div>
                                             <p class="text-sm text-gray-600">{{ Str::limit($episode->short_description, 60) }}</p>
                                             <p class="text-xs text-gray-500 mt-1">Slug: {{ $episode->slug }}</p>

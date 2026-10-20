@@ -30,4 +30,26 @@ class HomeController extends Controller
 
         return view('home', compact('latestEpisodes', 'latestBlogs', 'totalEpisodes'));
     }
+
+    /**
+     * Landing page for "Kannada business podcast" searches.
+     */
+    public function kannadaPodcast()
+    {
+        $kannadaEpisodes = Episode::published()
+            ->inLanguage('kn')
+            ->latest('published_at')
+            ->limit(9)
+            ->get();
+
+        $recentEpisodes = Episode::published()
+            ->whereNotIn('id', $kannadaEpisodes->pluck('id'))
+            ->latest('published_at')
+            ->limit(6)
+            ->get();
+
+        $totalEpisodes = Episode::published()->count();
+
+        return view('kannada-podcast', compact('kannadaEpisodes', 'recentEpisodes', 'totalEpisodes'));
+    }
 }

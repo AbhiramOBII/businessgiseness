@@ -34,6 +34,7 @@ class EpisodeController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'language' => ['nullable', Rule::in(array_keys(Episode::LANGUAGES))],
             'youtube_link' => 'nullable|url|max:255',
             'short_description' => 'required|string|max:500',
             'long_description' => 'required|string',
@@ -87,6 +88,7 @@ class EpisodeController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => ['required', 'string', 'max:255', Rule::unique('episodes')->ignore($episode->id)],
+            'language' => ['nullable', Rule::in(array_keys(Episode::LANGUAGES))],
             'youtube_link' => 'nullable|url|max:255',
             'short_description' => 'required|string|max:500',
             'long_description' => 'required|string',

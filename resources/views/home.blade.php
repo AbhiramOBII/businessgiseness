@@ -1,43 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Business Giseness - Founder-First Storytelling Podcast')
-@section('meta-description', 'Dive deep into real, raw, unfiltered stories of entrepreneurs who are still building. Business Giseness celebrates founder-first narratives with authentic business insights.')
-@section('meta_keywords', 'business podcast, entrepreneur stories, startup podcast, founder interviews, business giseness, entrepreneurship, business strategy, startup stories')
+@section('title', \App\Support\Seo::DEFAULT_TITLE)
+@section('meta-description', \App\Support\Seo::metaDescription())
+@section('canonical_url', route('home'))
 
 @push('head')
-<!-- JSON-LD Structured Data -->
-<script type="application/ld+json">
-@php
-$jsonLd = [
-    '@context' => 'https://schema.org',
-    '@type' => 'WebSite',
-    'name' => 'Business Giseness',
-    'alternateName' => 'Business Giseness Podcast',
-    'url' => url('/'),
-    'description' => 'Founder-first storytelling podcast featuring real, raw, unfiltered stories of entrepreneurs who are still building their businesses.',
-    'publisher' => [
-        '@type' => 'Organization',
-        'name' => 'Business Giseness',
-        'logo' => [
-            '@type' => 'ImageObject',
-            'url' => asset('images/business-giseness-logo.webp')
-        ]
-    ],
-    'potentialAction' => [
-        '@type' => 'SearchAction',
-        'target' => url('/') . '?search={search_term_string}',
-        'query-input' => 'required name=search_term_string'
-    ]
-];
-@endphp
-{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
-</script>
+<script type="application/ld+json">{!! \App\Support\Seo::json([
+    '@context'   => 'https://schema.org',
+    '@type'      => 'WebPage',
+    '@id'        => route('home') . '#webpage',
+    'url'        => route('home'),
+    'name'       => \App\Support\Seo::DEFAULT_TITLE,
+    'description'=> \App\Support\Seo::metaDescription(),
+    'isPartOf'   => ['@id' => \App\Support\Seo::id('website')],
+    'about'      => ['@id' => \App\Support\Seo::id('podcast')],
+    'inLanguage' => 'en-IN',
+]) !!}</script>
 @endpush
 
 @section('content')
 
     <!-- Main Content -->
-    <main class="min-h-screen">
+    <div class="min-h-screen">
         <!-- Hero Section -->
         <section class="relative bg-gradient-to-br from-brand-dark via-gray-900 to-brand-dark text-brand-white overflow-hidden">
             <!-- Background Pattern -->
@@ -259,7 +243,7 @@ $jsonLd = [
                     <!-- Intro Paragraphs -->
                     <div class="space-y-6 mb-12">
                         <p class="text-lg text-gray-700 leading-relaxed">
-                            Business Giseness is a <span class="text-brand-gold font-semibold">bilingual podcast</span> that brings you real, unfiltered founder stories. Each episode features conversations with entrepreneurs, creators, professionals, educators, and changemakers who are building something meaningful.
+                            Business Giseness (<span lang="kn">{{ \App\Support\Seo::NAME_KN }}</span>) is a <a href="{{ route('kannada-business-podcast') }}" class="text-brand-gold font-semibold hover:underline">Kannada business podcast</a> from Bengaluru that brings you real, unfiltered founder stories from Karnataka. Each episode features conversations with entrepreneurs, creators, professionals, educators, and changemakers who are building something meaningful.
                         </p>
                         <p class="text-lg text-gray-700 leading-relaxed">
                             This is not a highlight reel of success. It is a deep dive into the <span class="text-brand-gold font-semibold">decisions, doubts, failures, risks, and turning points</span> that define every journey.
@@ -606,5 +590,7 @@ $jsonLd = [
             </div>
         </section>
 
-    </main>
+        @include('partials.faq', ['intro' => 'Quick answers about the Kannada business podcast from Bengaluru.'])
+
+    </div>
 @endsection

@@ -1,103 +1,87 @@
 @extends('layouts.app')
 
-@section('title', $episode->meta_title ?: $episode->title . ' - Business Giseness Podcast')
-@section('meta-description', $episode->meta_description ?: $episode->short_description)
-@section('meta_keywords', 'podcast, business, entrepreneurship, ' . Str::slug($episode->title, ' ') . ', business insights, startup stories')
+@php
+    $episodeTitle = $episode->meta_title ?: $episode->title;
+    $episodeDescription = $episode->meta_description ?: $episode->short_description;
+    $episodeGuests = $episode->guests;
+@endphp
+
+@section('title', str_contains($episodeTitle, 'Business Giseness') ? $episodeTitle : $episodeTitle . ' | Business Giseness' . ($episode->language === 'kn' ? ' Kannada Podcast' : ' Podcast'))
+@section('meta-description', $episodeDescription)
+@section('meta_keywords', 'Business Giseness, Kannada business podcast, ' . ($episode->language_label ? $episode->language_label . ' podcast, ' : '') . $episodeGuests->pluck('name')->join(', ') . ($episodeGuests->isNotEmpty() ? ', ' : '') . 'founder interview, Karnataka entrepreneurs')
 
 <!-- Override Open Graph meta tags for this episode -->
-@section('og_type', 'article')
-@section('og_title', $episode->meta_title ?: $episode->title)
-@section('og_description', $episode->meta_description ?: $episode->short_description)
-@section('og_url', request()->url())
-@if($episode->thumbnail)
-@section('og_image', $episode->thumbnail_url)
+@section('og_type', 'video.episode')
+@section('og_title', $episodeTitle)
+@section('og_description', $episodeDescription)
+@section('og_url', route('episodes.show', $episode))
+@if($episode->image_url)
+@section('og_image', $episode->image_url)
 @endif
 
 <!-- Override Twitter Card meta tags for this episode -->
-@section('twitter_title', $episode->meta_title ?: $episode->title)
-@section('twitter_description', $episode->meta_description ?: $episode->short_description)
-@section('twitter_url', request()->url())
-@if($episode->thumbnail)
-@section('twitter_image', $episode->thumbnail_url)
+@section('twitter_title', $episodeTitle)
+@section('twitter_description', $episodeDescription)
+@section('twitter_url', route('episodes.show', $episode))
+@if($episode->image_url)
+@section('twitter_image', $episode->image_url)
 @endif
 
-@section('canonical_url', request()->url())
+@section('canonical_url', route('episodes.show', $episode))
 
 @push('head')
-<!-- Article-specific meta tags -->
-<meta property="article:published_time" content="{{ $episode->published_at->toISOString() }}">
-<meta property="article:author" content="Business Giseness">
+<meta property="article:published_time" content="{{ $episode->published_at->toIso8601String() }}">
+<meta property="article:modified_time" content="{{ $episode->updated_at->toIso8601String() }}">
+<meta property="article:author" content="{{ \App\Support\Seo::HOST_NAME }}">
 <meta property="article:section" content="Podcast">
-@if($episode->thumbnail)
-<meta property="og:image:alt" content="{{ htmlspecialchars($episode->title, ENT_QUOTES, 'UTF-8') }}">
+<meta property="og:image:alt" content="{{ $episode->title }}">
+@if($episode->youtube_id)
+<meta property="og:video" content="https://www.youtube.com/embed/{{ $episode->youtube_id }}">
 @endif
 
-<!-- Additional SEO Meta Tags -->
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-
-<!-- Preconnect for performance -->
 <link rel="preconnect" href="https://www.youtube.com" crossorigin>
 <link rel="dns-prefetch" href="//www.youtube.com">
 
-<!-- Structured Data - Podcast Episode -->
-<script type="application/ld+json">
-{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => 'PodcastEpisode',
-    'name' => $episode->title,
-    'description' => $episode->short_description,
-    'url' => request()->url(),
-    'datePublished' => $episode->published_at->toISOString(),
-    'partOfSeries' => [
-        '@type' => 'PodcastSeries',
-        'name' => 'Business Giseness Podcast',
-        'url' => route('episodes.index')
-    ],
-    'publisher' => [
-        '@type' => 'Organization',
-        'name' => 'Business Giseness',
-        'url' => route('home')
-    ]
-] + ($episode->thumbnail ? ['image' => $episode->thumbnail_url] : [])
-  + ($episode->youtube_link ? [
-      'associatedMedia' => [
-          '@type' => 'VideoObject',
-          'contentUrl' => $episode->youtube_link,
-          'embedUrl' => $episode->youtube_link,
-          'name' => $episode->title,
-          'description' => $episode->short_description,
-          'uploadDate' => $episode->published_at->toISOString()
-      ]
-  ] : []), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) !!}
-</script>
+@php
+    $episodeUrl = route('episodes.show', $episode);
+    $episodeSchema = array_filter([
+        '@context'      => 'https://schema.org',
+        '@type'         => 'PodcastEpisode',
+        '@id'           => $episodeUrl . '#episode',
+        'name'          => $episode->title,
+        'description'   => $episodeDescription,
+        'url'           => $episodeUrl,
+        'image'         => $episode->image_url,
+        'datePublished' => $episode->published_at->toIso8601String(),
+        'dateModified'  => $episode->updated_at->toIso8601String(),
+        'inLanguage'    => $episode->schema_language,
+        'partOfSeries'  => ['@id' => \App\Support\Seo::id('podcast')],
+        'publisher'     => ['@id' => \App\Support\Seo::id('organization')],
+        'author'        => ['@id' => \App\Support\Seo::id('host')],
+        'actor'         => $episodeGuests->map(fn ($guest) => ['@type' => 'Person', 'name' => $guest->name, 'url' => route('guests.show', $guest)])->values()->all() ?: null,
+        'associatedMedia' => $episode->youtube_id ? array_filter([
+            '@type'        => 'VideoObject',
+            'name'         => $episode->title,
+            'description'  => $episode->short_description,
+            'thumbnailUrl' => $episode->image_url,
+            'uploadDate'   => $episode->published_at->toIso8601String(),
+            'embedUrl'     => 'https://www.youtube.com/embed/' . $episode->youtube_id,
+            'url'          => $episode->youtube_link,
+            'inLanguage'   => $episode->schema_language,
+        ]) : null,
+    ]);
+@endphp
+<script type="application/ld+json">{!! \App\Support\Seo::json($episodeSchema) !!}</script>
 
-<!-- Breadcrumb Structured Data -->
-<script type="application/ld+json">
-{!! json_encode([
+<script type="application/ld+json">{!! \App\Support\Seo::json([
     '@context' => 'https://schema.org',
     '@type' => 'BreadcrumbList',
     'itemListElement' => [
-        [
-            '@type' => 'ListItem',
-            'position' => 1,
-            'name' => 'Home',
-            'item' => route('home')
-        ],
-        [
-            '@type' => 'ListItem',
-            'position' => 2,
-            'name' => 'Episodes',
-            'item' => route('episodes.index')
-        ],
-        [
-            '@type' => 'ListItem',
-            'position' => 3,
-            'name' => $episode->title,
-            'item' => request()->url()
-        ]
-    ]
-], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) !!}
-</script>
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Episodes', 'item' => route('episodes.index')],
+        ['@type' => 'ListItem', 'position' => 3, 'name' => $episode->title, 'item' => $episodeUrl],
+    ],
+]) !!}</script>
 @endpush
 
 @section('content')
@@ -116,7 +100,7 @@
     </div>
 
     <!-- Episode Article -->
-    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" itemscope itemtype="https://schema.org/PodcastEpisode">
+    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Episode Header -->
         <header class="text-center mb-12">
             <!-- Episode Badge -->
@@ -124,20 +108,35 @@
                 <span class="bg-brand-gold text-brand-dark text-sm font-semibold px-4 py-2 rounded-full">
                     <i class="fas fa-podcast mr-2"></i>Episode
                 </span>
+                @if($episode->language_label)
+                    <a href="{{ route('episodes.index', ['language' => $episode->language === 'en' ? 'en' : 'kn']) }}"
+                       class="border border-gray-300 text-gray-700 hover:border-brand-gold text-sm font-semibold px-4 py-2 rounded-full transition-colors">
+                        <i class="fas fa-language mr-1"></i>{{ $episode->language_label }}
+                    </a>
+                @endif
                 <span class="text-gray-500 text-sm">
-                    Published <time datetime="{{ $episode->published_at->toISOString() }}" itemprop="datePublished">{{ $episode->published_at->format('F j, Y') }}</time>
+                    Published <time datetime="{{ $episode->published_at->toISOString() }}">{{ $episode->published_at->format('F j, Y') }}</time>
                 </span>
             </div>
             
             <!-- Episode Title -->
-            <h1 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight" itemprop="name">
+            <h1 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
                 {{ $episode->title }}
             </h1>
             
             <!-- Short Description -->
-            <p class="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto mb-8" itemprop="description">
+            <p class="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto mb-8">
                 {{ $episode->short_description }}
             </p>
+
+            @if($episodeGuests->isNotEmpty())
+                <p class="text-gray-600 mb-8">
+                    <span class="text-gray-500">Featuring</span>
+                    @foreach($episodeGuests as $guest)
+                        <a href="{{ route('guests.show', $guest) }}" class="font-semibold text-brand-dark hover:text-brand-gold underline decoration-brand-gold/40 underline-offset-4">{{ $guest->name }}</a>@if(!$loop->last), @endif
+                    @endforeach
+                </p>
+            @endif
 
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row justify-center items-center space-y-6 sm:space-y-0 sm:space-x-8">
@@ -178,7 +177,7 @@
                             allowfullscreen
                             title="{{ $episode->title }} - Video"
                             loading="lazy"
-                            itemprop="embedUrl">
+                           >
                         </iframe>
                     @else
                         <div class="w-full h-full flex items-center justify-center bg-gray-100">
@@ -196,7 +195,7 @@
         <!-- Episode Content -->
         <section class="prose prose-lg prose-gray max-w-none mb-12" aria-labelledby="episode-content">
             <h2 id="episode-content" class="sr-only">Episode Description</h2>
-            <div class="text-gray-800 leading-relaxed text-lg whitespace-pre-line" itemprop="description">
+            <div class="text-gray-800 leading-relaxed text-lg whitespace-pre-line">
                 {!! $episode->long_description !!}
             </div>
         </section>

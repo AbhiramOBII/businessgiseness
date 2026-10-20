@@ -1,54 +1,25 @@
 @extends('layouts.app')
 
-@section('title', 'About Business Giseness — Bilingual Founder Podcast in English & Kannada')
-@section('meta-description', 'Meet Abhiram Chandramohan, host of Business Giseness — the bilingual founder podcast in English & Kannada that celebrates the real, raw stories behind building a business.')
-@section('meta_keywords', 'about business giseness, Abhiram Chandramohan, bilingual podcast, founder podcast, Kannada podcast, entrepreneurship podcast, Bengaluru podcast')
+@section('title', 'About Business Giseness — Kannada Business Podcast & Host Abhiram Chandramohan')
+@section('meta-description', 'The story behind Business Giseness (ಬಿಸಿನೆಸ್ ಗಿಸಿನೆಸ್), the Kannada business podcast from Bengaluru, and its host Abhiram Chandramohan — real founder stories from Karnataka in Kannada & English.')
+@section('meta_keywords', 'about business giseness, Abhiram Chandramohan, Kannada business podcast, Kannada podcast host, bilingual podcast, Bengaluru podcast, Karnataka founders')
 @section('og_type', 'profile')
-@section('og_title', 'About Business Giseness — Bilingual Founder Podcast')
-@section('og_description', 'Meet Abhiram Chandramohan, host of Business Giseness — celebrating real founder stories in English and Kannada.')
+@section('og_title', 'About Business Giseness — Kannada Business Podcast')
+@section('og_description', 'Meet Abhiram Chandramohan, host of Business Giseness — the Kannada business podcast celebrating real founder stories from Karnataka.')
+@section('og_image', \App\Support\Seo::hostImageUrl())
 @section('canonical_url', route('about-business-giseness-podcast'))
 
 @push('head')
-<script type="application/ld+json">
-{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type'    => 'Person',
-    '@id'      => route('about-business-giseness-podcast') . '#host',
-    'name'     => 'Abhiram Chandramohan',
-    'jobTitle' => 'Podcast Host',
-    'description' => 'Abhiram Chandramohan is the host and founder of Business Giseness, a bilingual podcast that celebrates raw, unfiltered founder stories in English and Kannada.',
-    'url'      => route('about-business-giseness-podcast'),
-    'image'    => asset('images/Abhiram-photo-03.jpg'),
-    'worksFor' => [
-        '@type' => 'Organization',
-        'name'  => 'Business Giseness',
-        'url'   => route('home')
-    ],
-    'sameAs' => array_filter([
-        \App\Models\SiteSetting::get('social_youtube'),
-        \App\Models\SiteSetting::get('social_spotify'),
-        \App\Models\SiteSetting::get('social_instagram'),
-        \App\Models\SiteSetting::get('social_linkedin'),
-    ])
-], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
-</script>
-
-<script type="application/ld+json">
-{!! json_encode([
-    '@context'    => 'https://schema.org',
-    '@type'       => 'PodcastSeries',
-    'name'        => 'Business Giseness',
-    'description' => 'A bilingual podcast show in English and Kannada featuring real founder stories, honest conversations about business, struggle, growth and the journey behind building something meaningful.',
-    'url'         => route('episodes.index'),
-    'inLanguage'  => ['en', 'kn'],
-    'author'      => [
-        '@type' => 'Person',
-        'name'  => 'Abhiram Chandramohan',
-        '@id'   => route('about-business-giseness-podcast') . '#host',
-    ],
-    'webFeed' => route('home'),
-], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
-</script>
+<script type="application/ld+json">{!! \App\Support\Seo::json([
+    '@context'   => 'https://schema.org',
+    '@type'      => 'AboutPage',
+    'url'        => route('about-business-giseness-podcast'),
+    'name'       => 'About Business Giseness',
+    'isPartOf'   => ['@id' => \App\Support\Seo::id('website')],
+    'about'      => ['@id' => \App\Support\Seo::id('podcast')],
+    'mainEntity' => ['@id' => \App\Support\Seo::id('host')],
+    'primaryImageOfPage' => \App\Support\Seo::hostImageUrl(),
+]) !!}</script>
 @endpush
 
 @section('content')
@@ -113,7 +84,7 @@
                         <div class="relative">
                             <div class="absolute -top-3 -left-3 w-full h-full border-2 border-brand-gold rounded-2xl opacity-30"></div>
                             <img
-                                src="{{ asset('images/Abhiram-photo-03.jpg') }}"
+                                src="{{ asset('images/abhiram-chandramohan-founder-obii-kriationz.webp') }}"
                                 alt="Abhiram Chandramohan — Host of Business Giseness"
                                 class="relative w-full object-cover rounded-2xl"
                                 style="aspect-ratio:4/5; object-position:top;"

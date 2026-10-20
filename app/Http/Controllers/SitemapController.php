@@ -6,6 +6,7 @@ use App\Models\Episode;
 use App\Models\Guest;
 use App\Models\BlogPost;
 use App\Models\SiteSetting;
+use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -18,22 +19,101 @@ class SitemapController extends Controller
     {
         $domain = rtrim(SiteSetting::get('general_sitemap_domain') ?: url('/'), '/');
 
-        $lines = [
-            'User-agent: *',
-            'Allow: /',
-            '',
-            'Disallow: /admin',
-            'Disallow: /admin/',
-            'Disallow: /login',
-            'Disallow: /password',
-            'Disallow: /profile',
-            'Disallow: /dashboard',
-            '',
-            "Sitemap: {$domain}/sitemap.xml",
+        $privatePaths = ['/admin', '/admin/', '/login', '/password', '/profile', '/dashboard'];
+        $rules = array_merge(['Allow: /'], array_map(fn ($path) => "Disallow: {$path}", $privatePaths));
+
+        // AI search and assistant crawlers are welcomed explicitly so the show can be
+        // cited in AI answers. A named group replaces "*" for that bot, so it repeats the rules.
+        $aiCrawlers = [
+            'GPTBot', 'OAI-SearchBot', 'ChatGPT-User',
+            'ClaudeBot', 'Claude-SearchBot', 'Claude-User',
+            'PerplexityBot', 'Perplexity-User',
+            'Google-Extended', 'Applebot-Extended', 'Bingbot', 'CCBot',
         ];
+
+        $lines = array_merge(
+            ['User-agent: *'], $rules, [''],
+            ['# AI search & assistant crawlers'],
+            array_map(fn ($bot) => "User-agent: {$bot}", $aiCrawlers), $rules, [''],
+            ["Sitemap: {$domain}/sitemap.xml"],
+        );
 
         return response(implode("\n", $lines) . "\n", 200)
             ->header('Content-Type', 'text/plain; charset=utf-8');
+    }
+
+    /**
+     * Serve /llms.txt — a plain-Markdown briefing for AI assistants (llmstxt.org).
+     */
+    public function llms(): Response
+    {
+        $socials  = Seo::socials();
+        $contact  = Seo::contact();
+        $stats    = Seo::stats();
+        $episodes = Episode::published()->latest('published_at')->limit(15)->get();
+        $posts    = BlogPost::published()->latest('published_at')->limit(8)->get();
+
+        $md = [];
+        $md[] = '# ' . Seo::NAME . ' (' . Seo::NAME_KN . ')';
+        $md[] = '';
+        $md[] = '> ' . Seo::summary();
+        $md[] = '';
+        $md[] = '## Key facts';
+        $md[] = '- Category: ' . Seo::CATEGORY . ' (' . Seo::CATEGORY_KN . ')';
+        $md[] = '- Languages: Kannada and English';
+        $md[] = '- Based in: Bengaluru, Karnataka, India';
+        $md[] = '- Host: ' . Seo::HOST_NAME . ' (' . Seo::HOST_URL . ')';
+        $md[] = '- Produced by: ' . Seo::PRODUCER_NAME . ' (' . Seo::PRODUCER_URL . ')';
+        $md[] = '- Format: long-form video and audio conversations with founders and entrepreneurs';
+        $md[] = '- Published episodes on this site: ' . Episode::published()->count();
+        foreach ($stats as $stat) {
+            // The live episode count above is authoritative; the hero stat is hand-edited
+            if (strcasecmp($stat['label'], 'Episodes') !== 0) {
+                $md[] = '- ' . $stat['label'] . ': ' . $stat['value'];
+            }
+        }
+        if ($guests = Seo::notableGuests(8)) {
+            $md[] = '- Notable guests: ' . implode(', ', $guests);
+        }
+        $md[] = '- Guest enquiries: ' . $contact['email'] . ', ' . $contact['phone'];
+        $md[] = '';
+        $md[] = '## Watch and listen';
+        $platformNames = ['youtube' => 'YouTube', 'spotify' => 'Spotify', 'instagram' => 'Instagram', 'linkedin' => 'LinkedIn'];
+        foreach ($socials as $platform => $url) {
+            $md[] = '- [' . ($platformNames[$platform] ?? ucfirst($platform)) . '](' . $url . ')';
+        }
+        $md[] = '';
+        $md[] = '## Key pages';
+        $md[] = '- [Home](' . route('home') . '): latest episodes and what the show is about';
+        $md[] = '- [Kannada Business Podcast](' . route('kannada-business-podcast') . '): why the show exists and who it is for';
+        $md[] = '- [About and host](' . route('about-business-giseness-podcast') . '): the story behind the show and host ' . Seo::HOST_NAME;
+        $md[] = '- [All episodes](' . route('episodes.index') . ')';
+        $md[] = '- [Kannada episodes](' . route('episodes.index', ['language' => 'kn']) . ')';
+        $md[] = '- [Guests](' . route('guests.index') . ')';
+        $md[] = '- [Blog](' . route('blog.index') . '): business lessons drawn from the conversations';
+        $md[] = '';
+        $md[] = '## Latest episodes';
+        foreach ($episodes as $episode) {
+            $language = $episode->language_label ? ' [' . $episode->language_label . ']' : '';
+            $md[] = '- [' . $episode->title . '](' . route('episodes.show', $episode) . ')' . $language . ': ' . trim(preg_replace('/\s+/', ' ', strip_tags($episode->short_description)));
+        }
+        if ($posts->isNotEmpty()) {
+            $md[] = '';
+            $md[] = '## Latest articles';
+            foreach ($posts as $post) {
+                $md[] = '- [' . $post->title . '](' . route('blog.show', $post) . '): ' . trim(preg_replace('/\s+/', ' ', strip_tags($post->short_description)));
+            }
+        }
+        $md[] = '';
+        $md[] = '## Frequently asked questions';
+        foreach (Seo::faqs() as $faq) {
+            $md[] = '';
+            $md[] = '### ' . $faq['q'];
+            $md[] = $faq['a'];
+        }
+
+        return response(implode("\n", $md) . "\n", 200)
+            ->header('Content-Type', 'text/markdown; charset=utf-8');
     }
 
     /**
@@ -52,9 +132,14 @@ class SitemapController extends Controller
         $xml->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
         $xml->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
 
-        $this->addUrl($xml, route('home'), now()->toAtomString(), 'daily', '1.0');
-        $this->addUrl($xml, route('about-business-giseness-podcast'), now()->startOfMonth()->toAtomString(), 'monthly', '0.8');
-        $this->addUrl($xml, route('episodes.index'), now()->toAtomString(), 'daily', '0.9');
+        // Listing pages change when their newest content changes
+        $latestEpisode = $episodes->max('updated_at')?->tz('UTC')->toAtomString();
+        $latestContent = collect([$episodes->max('updated_at'), $blogPosts->max('updated_at')])->filter()->max()?->tz('UTC')->toAtomString();
+
+        $this->addUrl($xml, route('home'), $latestContent, 'daily', '1.0');
+        $this->addUrl($xml, route('kannada-business-podcast'), $latestEpisode, 'weekly', '0.9');
+        $this->addUrl($xml, route('about-business-giseness-podcast'), null, 'monthly', '0.8');
+        $this->addUrl($xml, route('episodes.index'), $latestEpisode, 'daily', '0.9');
         $this->addUrl($xml, route('guests.index'), now()->startOfWeek()->toAtomString(), 'weekly', '0.7');
         $this->addUrl($xml, route('blog.index'), now()->toAtomString(), 'weekly', '0.7');
         $this->addUrl($xml, route('privacy-policy'), '2025-01-01T00:00:00+00:00', 'yearly', '0.3');

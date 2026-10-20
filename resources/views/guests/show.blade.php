@@ -1,43 +1,56 @@
 @extends('layouts.app')
 
-@section('title', $guest->name . ' - Business Giseness Podcast Guest')
-@section('meta-description', $guest->short_description ?: 'Learn about ' . $guest->name . ', a featured guest on the Business Giseness Podcast sharing insights on entrepreneurship and business success.')
+@php
+    $guestDescription = $guest->short_description
+        ?: $guest->name . ' on Business Giseness, the Kannada business podcast from Bengaluru — their founder journey, lessons and episodes.';
+@endphp
+
+@section('title', $guest->name . ' on Business Giseness | Kannada Business Podcast Guest')
+@section('meta-description', $guestDescription)
+@section('og_type', 'profile')
+@section('og_title', $guest->name . ' on Business Giseness')
+@section('og_description', $guestDescription)
+@section('og_url', route('guests.show', $guest))
+@section('twitter_title', $guest->name . ' on Business Giseness')
+@section('twitter_description', $guestDescription)
+@if($guest->photo_url)
+@section('og_image', $guest->photo_url)
+@section('twitter_image', $guest->photo_url)
+@endif
+@section('canonical_url', route('guests.show', $guest))
 
 @push('head')
-<meta property="og:title" content="{{ $guest->name }} - Business Giseness Podcast Guest">
-<meta property="og:description" content="{{ $guest->short_description ?: 'Learn about ' . $guest->name . ', a featured guest on the Business Giseness Podcast.' }}">
-@if($guest->photo_url)
-<meta property="og:image" content="{{ $guest->photo_url }}">
-@endif
-<meta property="og:url" content="{{ url()->current() }}">
-<meta property="og:type" content="profile">
-
-<script type="application/ld+json">
-{!! json_encode(array_filter([
+<script type="application/ld+json">{!! \App\Support\Seo::json([
     '@context' => 'https://schema.org',
-    '@type' => 'Person',
-    'name' => $guest->name,
-    'description' => $guest->short_description ?: 'Guest on Business Giseness Podcast',
+    '@type' => 'ProfilePage',
     'url' => route('guests.show', $guest),
-    'image' => $guest->photo_url ?: null,
-    'sameAs' => $guest->website || $guest->social_links ? array_filter([
-        $guest->website,
-        ...collect($guest->social_links)->pluck('url')->toArray()
-    ]) : null,
-    'worksFor' => [
-        '@type' => 'Organization',
-        'name' => 'Business Giseness Podcast'
-    ],
-    'performerIn' => $guest->episodes->count() > 0 ? $guest->episodes->take(5)->map(function($episode) {
-        return [
+    'name' => $guest->name . ' on Business Giseness',
+    'isPartOf' => ['@id' => \App\Support\Seo::id('website')],
+    'mainEntity' => array_filter([
+        '@type' => 'Person',
+        '@id' => route('guests.show', $guest) . '#person',
+        'name' => $guest->name,
+        'description' => $guestDescription,
+        'url' => route('guests.show', $guest),
+        'image' => $guest->photo_url,
+        'sameAs' => array_values(array_unique(array_filter(collect($guest->social_links)->pluck('url')->all()))) ?: null,
+        'subjectOf' => $guest->episodes->take(10)->map(fn ($episode) => [
             '@type' => 'PodcastEpisode',
             'name' => $episode->title,
             'url' => route('episodes.show', $episode),
-            'datePublished' => $episode->published_at->toISOString()
-        ];
-    })->toArray() : null
-]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
-</script>
+            'partOfSeries' => ['@id' => \App\Support\Seo::id('podcast')],
+        ])->values()->all() ?: null,
+    ]),
+]) !!}</script>
+<script type="application/ld+json">{!! \App\Support\Seo::json([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Guests', 'item' => route('guests.index')],
+        ['@type' => 'ListItem', 'position' => 3, 'name' => $guest->name, 'item' => route('guests.show', $guest)],
+    ],
+]) !!}</script>
 @endpush
 
 @section('content')
