@@ -14,10 +14,20 @@ class ContentController extends Controller
         $hero     = SiteSetting::getGroup('hero');
         $site     = SiteSetting::getGroup('site');
         $social   = SiteSetting::getGroup('social');
+        $socials  = Seo::socials();
+
+        return view('admin.content', compact('hero', 'site', 'social', 'socials'));
+    }
+
+    /**
+     * YouTube Stats page: subscriber/view numbers per channel, entered by hand.
+     */
+    public function audience()
+    {
         $audience = SiteSetting::getGroup('audience');
         $socials  = Seo::socials();
 
-        return view('admin.content', compact('hero', 'site', 'social', 'audience', 'socials'));
+        return view('admin.audience', compact('audience', 'socials'));
     }
 
     public function updateHero(Request $request)

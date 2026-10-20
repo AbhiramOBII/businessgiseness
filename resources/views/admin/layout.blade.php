@@ -61,6 +61,11 @@
                     <i class="fas fa-edit mr-3"></i>
                     Content Management
                 </a>
+
+                <a href="{{ route('admin.audience') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.audience') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
+                    <i class="fab fa-youtube mr-3"></i>
+                    YouTube Stats
+                </a>
                 
                 <a href="{{ route('admin.episodes.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.episodes.*') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
                     <i class="fas fa-podcast mr-3"></i>

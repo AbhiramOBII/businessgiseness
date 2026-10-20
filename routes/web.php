@@ -92,6 +92,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/content/hero', [\App\Http\Controllers\Admin\ContentController::class, 'updateHero'])->name('content.hero');
     Route::post('/content/site', [\App\Http\Controllers\Admin\ContentController::class, 'updateSite'])->name('content.site');
     Route::post('/content/social', [\App\Http\Controllers\Admin\ContentController::class, 'updateSocial'])->name('content.social');
+    Route::get('/youtube-stats', [\App\Http\Controllers\Admin\ContentController::class, 'audience'])->name('audience');
     Route::post('/content/audience', [\App\Http\Controllers\Admin\ContentController::class, 'updateAudience'])->name('content.audience');
     
     // Episode Management

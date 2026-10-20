@@ -32,9 +32,14 @@ class AudienceStatsTest extends TestCase
         Episode::create(['title' => 'Ep', 'slug' => 'ep', 'short_description' => 's', 'long_description' => 'l', 'is_published' => true, 'published_at' => now()->subDay()]);
         SiteSetting::setMany(['hero_stat_2_value' => '1K', 'hero_stat_2_label' => 'Subscribers'], 'hero');
 
-        $this->actingAs($this->admin())->get('/admin/content')->assertOk()
+        // Own page, linked from the sidebar and from Content Management
+        $this->actingAs($this->admin())->get('/admin/youtube-stats')->assertOk()
             ->assertSee('Audience Stats')->assertSee('Kannada channel')->assertSee('English channel')
-            ->assertDontSee('Sync now');
+            ->assertSee('Save Audience Stats')->assertDontSee('Sync now');
+        $this->actingAs($this->admin())->get('/admin/content')->assertOk()
+            ->assertSee('YouTube Stats')->assertSee(route('admin.audience'), false);
+        $this->actingAs($this->admin())->get('/admin/dashboard')->assertOk()
+            ->assertSee(route('admin.audience'), false);
 
         $this->actingAs($this->admin())->post('/admin/content/audience', [
             'audience_kn_subscribers' => '10000',
