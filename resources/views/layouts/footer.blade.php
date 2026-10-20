@@ -29,7 +29,7 @@
             ['label' => 'About the Podcast',        'url' => route('about-business-giseness-podcast')],
             ['label' => 'Kannada Business Podcast', 'url' => route('kannada-business-podcast')],
             ['label' => 'Blog & Insights',          'url' => route('blog.index')],
-            ['label' => 'Be a Guest',               'url' => route('home') . '#collaborate'],
+            ['label' => 'FAQ',                      'url' => route('home') . '#faq'],
         ],
     ];
 @endphp
@@ -38,7 +38,7 @@
     <h2 id="footer-heading" class="sr-only">Business Giseness — Kannada Business Podcast</h2>
 
     {{-- ── Brand row ─────────────────────────────────────────────── --}}
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-14 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-14 grid gap-12 lg:grid-cols-2 lg:gap-16 border-b border-white/10">
         <div class="max-w-lg">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-4" aria-label="Business Giseness home">
                 <img src="{{ asset('images/logo-english-white-gold.png') }}" alt="Business Giseness" class="h-10 w-auto object-contain" loading="lazy">
@@ -74,9 +74,32 @@
             </ul>
         </div>
 
-        <div class="w-full lg:max-w-md">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/50 mb-3">Get new episodes by email</p>
-            <livewire:newsletter-subscribe />
+        <div class="flex flex-col justify-between gap-12 lg:max-w-md lg:justify-self-end w-full">
+            {{-- Guest invitation --}}
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-gold">Be a guest</p>
+                <p class="mt-3 text-2xl md:text-3xl font-bold leading-tight">
+                    Building something in Karnataka? <span class="text-white/50">Your story deserves to be heard.</span>
+                </p>
+                <p class="mt-3 text-sm leading-relaxed text-white/60">
+                    We're always looking for founders, MSME owners and makers who are still in the middle of the journey — in Kannada or English.
+                </p>
+                <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+                    <a href="mailto:{{ $contact['email'] }}?subject={{ rawurlencode('Guest enquiry — Business Giseness') }}"
+                       class="inline-flex items-center gap-2 rounded-full bg-brand-gold hover:bg-yellow-500 text-brand-dark font-semibold text-sm px-5 py-2.5 transition-colors">
+                        <i class="fas fa-microphone text-xs" aria-hidden="true"></i> Pitch your story
+                    </a>
+                    <a href="tel:{{ $phoneHref }}" class="text-sm text-white/70 hover:text-brand-gold transition-colors">
+                        or call {{ $contact['phone'] }}
+                    </a>
+                </div>
+            </div>
+
+            {{-- Newsletter --}}
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/50 mb-3">Get new episodes by email</p>
+                <livewire:newsletter-subscribe />
+            </div>
         </div>
     </div>
 
