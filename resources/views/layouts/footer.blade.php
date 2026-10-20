@@ -8,7 +8,8 @@
     $phoneHref      = preg_replace('/[^0-9+]/', '', $contact['phone']);
 
     $socialMeta = [
-        'youtube'   => ['icon' => 'fab fa-youtube',   'label' => 'YouTube'],
+        'youtube'   => ['icon' => 'fab fa-youtube',   'label' => 'YouTube (Kannada)'],
+        'youtube_english' => ['icon' => 'fab fa-youtube', 'label' => 'YouTube (English)'],
         'spotify'   => ['icon' => 'fab fa-spotify',   'label' => 'Spotify'],
         'instagram' => ['icon' => 'fab fa-instagram', 'label' => 'Instagram'],
         'linkedin'  => ['icon' => 'fab fa-linkedin-in', 'label' => 'LinkedIn'],
@@ -77,7 +78,7 @@
                 @endif
 
                 <ul class="mt-6 flex gap-2" aria-label="Business Giseness on social media">
-                    @foreach($socials as $platform => $url)
+                    @foreach(\Illuminate\Support\Arr::except($socials, ['youtube_english']) as $platform => $url)
                         <li>
                             <a href="{{ $url }}" target="_blank" rel="noopener noreferrer me"
                                aria-label="Business Giseness on {{ $socialMeta[$platform]['label'] }}"
@@ -138,7 +139,14 @@
                         <a href="{{ $socials['youtube'] }}" target="_blank" rel="noopener noreferrer"
                            class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 hover:border-brand-gold/60 transition-colors">
                             <i class="fab fa-youtube text-xl text-red-500" aria-hidden="true"></i>
-                            <span class="text-sm leading-tight"><span class="block text-[11px] text-gray-500">Watch on</span>YouTube</span>
+                            <span class="text-sm leading-tight"><span class="block text-[11px] text-gray-500">Watch in Kannada</span>YouTube</span>
+                        </a>
+                    @endisset
+                    @isset($socials['youtube_english'])
+                        <a href="{{ $socials['youtube_english'] }}" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 hover:border-brand-gold/60 transition-colors">
+                            <i class="fab fa-youtube text-xl text-red-500" aria-hidden="true"></i>
+                            <span class="text-sm leading-tight"><span class="block text-[11px] text-gray-500">Watch in English</span>YouTube</span>
                         </a>
                     @endisset
                     @isset($socials['spotify'])

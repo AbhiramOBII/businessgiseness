@@ -32,6 +32,7 @@ class SiteSettingsSeeder extends Seeder
 
             // ── Social Links ──────────────────────────────────
             ['key' => 'social_youtube',       'value' => 'https://www.youtube.com/@BusinessGiseness',                      'group' => 'social'],
+            ['key' => 'social_youtube_english', 'value' => 'https://www.youtube.com/@BusinessGisenessEnglish',             'group' => 'social'],
             ['key' => 'social_spotify',       'value' => 'https://creators.spotify.com/pod/profile/business-giseness/',    'group' => 'social'],
             ['key' => 'social_instagram',     'value' => 'https://www.instagram.com/businessgisenessenglish/',             'group' => 'social'],
             ['key' => 'social_linkedin',      'value' => 'https://www.linkedin.com/company/business-giseness/',            'group' => 'social'],

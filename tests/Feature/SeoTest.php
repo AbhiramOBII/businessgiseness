@@ -162,7 +162,7 @@ class SeoTest extends TestCase
             ->assertSee('[Kannada]', false)
             ->assertSee('- Subscribers: 15K', false)
             ->assertDontSee('- Episodes: 99', false)
-            ->assertSee('[YouTube](', false)
+            ->assertSee('[YouTube — Kannada channel](', false)
             ->assertSee('### Is there a business podcast in Kannada?', false);
     }
 

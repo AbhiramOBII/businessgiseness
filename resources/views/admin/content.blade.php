@@ -7,6 +7,69 @@
 @section('content')
 <div class="space-y-8">
 
+    {{-- ── Live YouTube stats ─────────────────────────────────────── --}}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fab fa-youtube text-red-500 text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800">Live YouTube Stats</h3>
+                    <p class="text-xs text-gray-500">
+                        Subscribers and views from both channels, refreshed automatically every few hours
+                        @if($youtube) · last updated {{ \Illuminate\Support\Carbon::parse($youtube['synced_at'])->diffForHumans() }} @endif
+                    </p>
+                </div>
+            </div>
+            @if($youtubeKeySet)
+                <form action="{{ route('admin.content.youtube-sync') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Sync now
+                    </button>
+                </form>
+            @endif
+        </div>
+
+        <div class="p-6">
+            @if(session('success_youtube'))
+                <div class="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
+                    <i class="fas fa-check-circle"></i> {{ session('success_youtube') }}
+                </div>
+            @endif
+            @if(session('error_youtube'))
+                <div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
+                    <i class="fas fa-exclamation-circle"></i> {{ session('error_youtube') }}
+                </div>
+            @endif
+
+            @if(!$youtubeKeySet)
+                <div class="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+                    <i class="fas fa-key"></i>
+                    Live stats are off. Add a <strong>YouTube Data API v3</strong> key as <code class="bg-white px-1 rounded">YOUTUBE_API_KEY</code> in the server's <code class="bg-white px-1 rounded">.env</code> file to enable them. Until then, the hero stats below are shown.
+                </div>
+            @elseif($youtube)
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="rounded-lg bg-gray-900 text-white p-4">
+                        <p class="text-xs uppercase tracking-wider text-gray-400">Total</p>
+                        <p class="mt-1 text-2xl font-bold">{{ number_format($youtube['totals']['subscribers']) }} <span class="text-sm font-normal text-gray-400">subscribers</span></p>
+                        <p class="text-sm text-gray-300">{{ number_format($youtube['totals']['views']) }} views</p>
+                    </div>
+                    @foreach($youtube['channels'] as $channel)
+                        <div class="rounded-lg border border-gray-200 p-4">
+                            <p class="text-xs text-gray-500 truncate" title="{{ $channel['title'] }}">{{ $channel['title'] }} · {{ $channel['handle'] }}</p>
+                            <p class="mt-1 text-xl font-bold text-gray-900">{{ $channel['subscribers'] !== null ? number_format($channel['subscribers']) : 'Hidden' }} <span class="text-sm font-normal text-gray-500">subscribers</span></p>
+                            <p class="text-sm text-gray-600">{{ number_format($channel['views']) }} views · {{ $channel['videos'] }} videos</p>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-sm text-gray-600">No stats fetched yet — click <strong>Sync now</strong>.</p>
+            @endif
+        </div>
+    </div>
+
     {{-- ── 1. Home Hero ─────────────────────────────────────────────── --}}
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -80,6 +143,12 @@
             {{-- Stats --}}
             <div>
                 <h4 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Stats</h4>
+                @if($youtube)
+                    <p class="text-xs text-gray-500 mb-3">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Live YouTube numbers are shown on the site (see "Live YouTube Stats" below). These values are only used if live stats are unavailable.
+                    </p>
+                @endif
                 <div class="grid grid-cols-3 gap-4">
                     @foreach([1,2,3] as $i)
                     <div class="border border-gray-200 rounded-lg p-3 space-y-2">
@@ -208,13 +277,23 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-2">
-                        <i class="fab fa-youtube text-red-500"></i> YouTube URL
+                        <i class="fab fa-youtube text-red-500"></i> YouTube URL — Kannada channel
                     </label>
                     <input type="url" name="social_youtube"
                            value="{{ old('social_youtube', $social['social_youtube'] ?? '') }}"
                            placeholder="https://www.youtube.com/@..."
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-300 outline-none @error('social_youtube') border-red-400 @enderror">
                     @error('social_youtube')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-2">
+                        <i class="fab fa-youtube text-red-500"></i> YouTube URL — English channel
+                    </label>
+                    <input type="url" name="social_youtube_english"
+                           value="{{ old('social_youtube_english', $social['social_youtube_english'] ?? 'https://www.youtube.com/@BusinessGisenessEnglish') }}"
+                           placeholder="https://www.youtube.com/@..."
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-300 outline-none @error('social_youtube_english') border-red-400 @enderror">
+                    @error('social_youtube_english')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-2">

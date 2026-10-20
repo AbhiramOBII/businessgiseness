@@ -82,6 +82,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/content/hero', [\App\Http\Controllers\Admin\ContentController::class, 'updateHero'])->name('content.hero');
     Route::post('/content/site', [\App\Http\Controllers\Admin\ContentController::class, 'updateSite'])->name('content.site');
     Route::post('/content/social', [\App\Http\Controllers\Admin\ContentController::class, 'updateSocial'])->name('content.social');
+    Route::post('/content/youtube-sync', [\App\Http\Controllers\Admin\ContentController::class, 'syncYoutube'])->name('content.youtube-sync');
     
     // Episode Management
     Route::resource('episodes', \App\Http\Controllers\Admin\EpisodeController::class);

@@ -39,12 +39,8 @@
                         $heroLine2 = \App\Models\SiteSetting::get('hero_title_line2', 'That Deserve to');
                         $heroLine3 = \App\Models\SiteSetting::get('hero_title_line3_gold', 'Be Heard');
                         $heroSubtitle = \App\Models\SiteSetting::get('hero_subtitle', 'Business Giseness is a bilingual podcast show that brings real founder stories to life.');
-                        $stat1v = \App\Models\SiteSetting::get('hero_stat_1_value', '23');
-                        $stat1l = \App\Models\SiteSetting::get('hero_stat_1_label', 'Episodes');
-                        $stat2v = \App\Models\SiteSetting::get('hero_stat_2_value', '15.2K');
-                        $stat2l = \App\Models\SiteSetting::get('hero_stat_2_label', 'Subscribers');
-                        $stat3v = \App\Models\SiteSetting::get('hero_stat_3_value', '309K');
-                        $stat3l = \App\Models\SiteSetting::get('hero_stat_3_label', 'Views');
+                        // Live YouTube numbers when synced, else the values from Admin > Content
+                        $heroStats = \App\Support\Seo::stats();
                     @endphp
                     <!-- Badge -->
                     <div class="inline-flex items-center px-4 py-2 bg-brand-gold/20 border border-brand-gold/30 rounded-full text-brand-gold text-sm font-medium mb-6">
@@ -66,9 +62,9 @@
                     
                     <!-- Stats -->
                     <div class="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-8 mb-8">
-                        @if($stat1v)<div class="text-center"><div class="text-2xl font-bold text-brand-gold">{{ $stat1v }}</div><div class="text-sm text-gray-400">{{ $stat1l }}</div></div>@endif
-                        @if($stat2v)<div class="text-center"><div class="text-2xl font-bold text-brand-gold">{{ $stat2v }}</div><div class="text-sm text-gray-400">{{ $stat2l }}</div></div>@endif
-                        @if($stat3v)<div class="text-center"><div class="text-2xl font-bold text-brand-gold">{{ $stat3v }}</div><div class="text-sm text-gray-400">{{ $stat3l }}</div></div>@endif
+                        @foreach($heroStats as $stat)
+                            <div class="text-center"><div class="text-2xl font-bold text-brand-gold">{{ $stat['value'] }}</div><div class="text-sm text-gray-400">{{ $stat['label'] }}</div></div>
+                        @endforeach
                     </div>
                     
                     <!-- CTA Buttons -->

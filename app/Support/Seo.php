@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Episode;
 use App\Models\Guest;
 use App\Models\SiteSetting;
+use App\Services\YouTubeStats;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -67,6 +68,7 @@ class Seo
     {
         return array_filter([
             'youtube' => SiteSetting::get('social_youtube') ?: 'https://www.youtube.com/@BusinessGiseness',
+            'youtube_english' => SiteSetting::get('social_youtube_english') ?: 'https://www.youtube.com/@BusinessGisenessEnglish',
             'spotify' => SiteSetting::get('social_spotify') ?: 'https://creators.spotify.com/pod/profile/business-giseness/',
             'instagram' => SiteSetting::get('social_instagram') ?: 'https://www.instagram.com/businessgisenessenglish/',
             'linkedin' => SiteSetting::get('social_linkedin') ?: 'https://www.linkedin.com/company/business-giseness/',
@@ -74,16 +76,30 @@ class Seo
     }
 
     /**
-     * Audience stats as edited in Admin > Content (hero section).
+     * Audience stats for the hero, footer and llms.txt.
+     *
+     * Uses live YouTube numbers (both channels combined) plus the real published
+     * episode count when available; otherwise falls back to the hand-entered
+     * hero stats in Admin > Content. Each item: value, label, and live flag.
      */
     public static function stats(): array
     {
+        YouTubeStats::refreshInBackgroundIfStale();
+
+        if ($youtube = YouTubeStats::stored()) {
+            return Cache::remember('seo_live_stats_' . md5($youtube['synced_at']), 600, fn () => [
+                ['value' => (string) Episode::published()->count(), 'label' => 'Episodes', 'live' => true],
+                ['value' => YouTubeStats::compact($youtube['totals']['subscribers']), 'label' => 'Subscribers', 'live' => true],
+                ['value' => YouTubeStats::compact($youtube['totals']['views']), 'label' => 'Views', 'live' => true],
+            ]);
+        }
+
         $stats = [];
         foreach ([1, 2, 3] as $i) {
             $value = SiteSetting::get("hero_stat_{$i}_value");
             $label = SiteSetting::get("hero_stat_{$i}_label");
             if ($value && $label) {
-                $stats[] = ['value' => $value, 'label' => $label];
+                $stats[] = ['value' => $value, 'label' => $label, 'live' => false];
             }
         }
 
@@ -143,7 +159,16 @@ class Seo
             ];
         }
 
-        $platforms = array_values(array_intersect_key(['youtube' => 'YouTube', 'spotify' => 'Spotify'], $socials));
+        $platforms = [];
+        if ($handle = YouTubeStats::handleFromUrl($socials['youtube'] ?? null)) {
+            $platforms[] = 'YouTube (Kannada channel ' . $handle . ')';
+        }
+        if ($handle = YouTubeStats::handleFromUrl($socials['youtube_english'] ?? null)) {
+            $platforms[] = 'YouTube (English channel ' . $handle . ')';
+        }
+        if (isset($socials['spotify'])) {
+            $platforms[] = 'Spotify';
+        }
         $faqs[] = [
             'q' => 'Where can I watch or listen to Business Giseness?',
             'a' => 'Full episodes are on ' . self::listSentence($platforms ?: ['YouTube']) . ', and every episode is also listed with show notes on businessgiseness.com/episodes.',

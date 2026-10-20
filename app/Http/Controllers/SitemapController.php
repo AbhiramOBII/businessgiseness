@@ -6,6 +6,7 @@ use App\Models\Episode;
 use App\Models\Guest;
 use App\Models\BlogPost;
 use App\Models\SiteSetting;
+use App\Services\YouTubeStats;
 use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -66,10 +67,21 @@ class SitemapController extends Controller
         $md[] = '- Produced by: ' . Seo::PRODUCER_NAME . ' (' . Seo::PRODUCER_URL . ')';
         $md[] = '- Format: long-form video and audio conversations with founders and entrepreneurs';
         $md[] = '- Published episodes on this site: ' . Episode::published()->count();
-        foreach ($stats as $stat) {
-            // The live episode count above is authoritative; the hero stat is hand-edited
-            if (strcasecmp($stat['label'], 'Episodes') !== 0) {
-                $md[] = '- ' . $stat['label'] . ': ' . $stat['value'];
+        if ($youtube = YouTubeStats::stored()) {
+            $asOf = \Illuminate\Support\Carbon::parse($youtube['synced_at'])->format('j F Y');
+            $md[] = '- YouTube audience (as of ' . $asOf . '): ' . number_format($youtube['totals']['subscribers']) . ' subscribers and '
+                . number_format($youtube['totals']['views']) . ' views across ' . count($youtube['channels']) . ' channels';
+            foreach ($youtube['channels'] as $channel) {
+                $md[] = '  - ' . $channel['title'] . ' (' . $channel['handle'] . '): '
+                    . ($channel['subscribers'] !== null ? number_format($channel['subscribers']) . ' subscribers, ' : '')
+                    . number_format($channel['views']) . ' views, ' . $channel['videos'] . ' videos';
+            }
+        } else {
+            foreach ($stats as $stat) {
+                // The live episode count above is authoritative; the hero stat is hand-edited
+                if (strcasecmp($stat['label'], 'Episodes') !== 0) {
+                    $md[] = '- ' . $stat['label'] . ': ' . $stat['value'];
+                }
             }
         }
         if ($guests = Seo::notableGuests(8)) {
@@ -78,7 +90,7 @@ class SitemapController extends Controller
         $md[] = '- Guest enquiries: ' . $contact['email'] . ', ' . $contact['phone'];
         $md[] = '';
         $md[] = '## Watch and listen';
-        $platformNames = ['youtube' => 'YouTube', 'spotify' => 'Spotify', 'instagram' => 'Instagram', 'linkedin' => 'LinkedIn'];
+        $platformNames = ['youtube' => 'YouTube — Kannada channel', 'youtube_english' => 'YouTube — English channel', 'spotify' => 'Spotify', 'instagram' => 'Instagram', 'linkedin' => 'LinkedIn'];
         foreach ($socials as $platform => $url) {
             $md[] = '- [' . ($platformNames[$platform] ?? ucfirst($platform)) . '](' . $url . ')';
         }

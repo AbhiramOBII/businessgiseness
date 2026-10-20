@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Services\YouTubeStats;
 use Illuminate\Http\Request;
 
 class ContentController extends Controller
@@ -13,8 +14,23 @@ class ContentController extends Controller
         $hero   = SiteSetting::getGroup('hero');
         $site   = SiteSetting::getGroup('site');
         $social = SiteSetting::getGroup('social');
+        $youtube = YouTubeStats::stored();
+        $youtubeKeySet = (bool) YouTubeStats::apiKey();
 
-        return view('admin.content', compact('hero', 'site', 'social'));
+        return view('admin.content', compact('hero', 'site', 'social', 'youtube', 'youtubeKeySet'));
+    }
+
+    public function syncYoutube()
+    {
+        if (!YouTubeStats::apiKey()) {
+            return back()->with('error_youtube', 'YOUTUBE_API_KEY is not set in .env.');
+        }
+
+        $data = YouTubeStats::sync();
+
+        return $data
+            ? back()->with('success_youtube', 'YouTube stats updated: ' . number_format($data['totals']['subscribers']) . ' subscribers, ' . number_format($data['totals']['views']) . ' views.')
+            : back()->with('error_youtube', 'Could not reach YouTube. Check the API key and channel URLs, then try again (details in storage/logs/laravel.log).');
     }
 
     public function updateHero(Request $request)
@@ -56,13 +72,20 @@ class ContentController extends Controller
     public function updateSocial(Request $request)
     {
         $validated = $request->validate([
-            'social_youtube'   => 'nullable|url|max:200',
-            'social_spotify'   => 'nullable|url|max:200',
-            'social_instagram' => 'nullable|url|max:200',
-            'social_linkedin'  => 'nullable|url|max:200',
+            'social_youtube'         => 'nullable|url|max:200',
+            'social_youtube_english' => 'nullable|url|max:200',
+            'social_spotify'         => 'nullable|url|max:200',
+            'social_instagram'       => 'nullable|url|max:200',
+            'social_linkedin'        => 'nullable|url|max:200',
         ]);
 
+        $handlesBefore = YouTubeStats::handles();
         SiteSetting::setMany($validated, 'social');
+
+        // Channel changed: refresh live stats so the site doesn't show the old channel's numbers
+        if (YouTubeStats::handles() !== $handlesBefore && YouTubeStats::apiKey()) {
+            YouTubeStats::sync();
+        }
 
         return back()->with('success_social', 'Social links saved successfully.');
     }

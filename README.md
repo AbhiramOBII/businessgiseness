@@ -63,6 +63,22 @@ Set each episode's **language** (Kannada / English / both) in the admin — it d
 - `resources/views/layouts/app.blade.php` — public layout (SEO meta, footer); pages override meta via `@section('title')`, `@section('meta-description')`, `@section('og_image')`, etc.
 - `resources/views/admin/layout.blade.php` — admin layout
 
+## Live YouTube stats
+
+The hero, footer and `/llms.txt` show **live subscriber and view counts** combined across the Kannada and English YouTube channels (taken from the two YouTube URLs in Admin → Content), plus the real published-episode count. Without an API key the hand-entered hero stats are shown instead.
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a project → *APIs & Services* → enable **YouTube Data API v3** → *Credentials* → *Create API key*. Restrict the key to the YouTube Data API v3. (Free; each sync costs 2 of the 10,000 daily quota units.)
+2. Add it to `.env`: `YOUTUBE_API_KEY=...`, then `php artisan config:clear`.
+3. Run `php artisan youtube:sync-stats` once (or click **Sync now** in Admin → Content).
+
+Stats refresh every 6 hours via the scheduler — add this cron job in cPanel:
+
+```
+* * * * * cd /path/to/site && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Without cron, the site still refreshes stats in the background (after the response is sent) when they are over 12 hours old.
+
 ## Deployment (cPanel)
 
 The root `index.php` and `.htaccess` forward requests into `public/` for hosts where the document root can't point at `public/`. After pulling: `composer install --no-dev`, `php artisan migrate --force`, `npm run build` (or upload `public/build`), then `php artisan optimize:clear`.
