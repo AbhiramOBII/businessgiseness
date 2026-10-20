@@ -39,16 +39,19 @@
 
     {{-- ── Brand row ─────────────────────────────────────────────── --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-14 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between border-b border-white/10">
-        <div class="max-w-md">
+        <div class="max-w-lg">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-4" aria-label="Business Giseness home">
                 <img src="{{ asset('images/logo-english-white-gold.png') }}" alt="Business Giseness" class="h-10 w-auto object-contain" loading="lazy">
                 <span class="h-7 w-px bg-white/15" aria-hidden="true"></span>
                 <img src="{{ asset('images/logo-Kannada-white-gold.png') }}" alt="{{ Seo::NAME_KN }}" class="h-10 w-auto object-contain" loading="lazy">
             </a>
-            <p class="mt-5 text-sm leading-relaxed text-white/60">
-                {{ Seo::CATEGORY }} from Bengaluru — Karnataka's founders, in their own words.
-                <span lang="kn" class="block mt-1 text-white/40">{{ Seo::TAGLINE_KN }}</span>
+            <p class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">About the show</p>
+            <p class="mt-3 text-sm leading-relaxed text-white/60">
+                A space where small businesses take centre stage. Business Giseness sits down with the real builders of our
+                economy — local entrepreneurs, MSME owners and everyday dreamers who turned ideas into livelihoods — to talk
+                honestly about the challenges they faced, the risks they took and the determination that keeps them going.
             </p>
+            <p lang="kn" class="mt-2 text-sm text-white/40">{{ Seo::TAGLINE_KN }}</p>
             @if($stats)
                 <p class="mt-4 text-xs tracking-wide text-white/40">
                     @foreach($stats as $stat)
