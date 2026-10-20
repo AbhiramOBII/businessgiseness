@@ -34,7 +34,7 @@ class CommunityTest extends TestCase
 
     private function signup(CommunityEvent $event, array $overrides = [])
     {
-        return $this->post("/community/{$event->slug}/register", array_merge([
+        return $this->post("/bg-community/{$event->slug}/register", array_merge([
             'name' => 'Asha Rao',
             'email' => 'asha@example.com',
             'company' => 'Rao Foods',
@@ -58,9 +58,9 @@ class CommunityTest extends TestCase
         $event = CommunityEvent::firstOrFail();
         $this->assertSame('founders-evening-bengaluru', $event->slug);
 
-        $this->get('/community')->assertOk()->assertSee('Founders Evening Bengaluru')->assertSee('BG Community');
+        $this->get('/bg-community')->assertOk()->assertSee('Founders Evening Bengaluru')->assertSee('BG Community');
 
-        $html = $this->get('/community/founders-evening-bengaluru')->assertOk()
+        $html = $this->get('/bg-community/founders-evening-bengaluru')->assertOk()
             ->assertSee('Save your seat')
             ->assertSee('30 of 30 seats left')
             ->getContent();
@@ -76,7 +76,7 @@ class CommunityTest extends TestCase
     {
         $event = $this->meetup();
 
-        $this->signup($event)->assertRedirect("/community/{$event->slug}")->assertSessionHas('registered');
+        $this->signup($event)->assertRedirect("/bg-community/{$event->slug}")->assertSessionHas('registered');
 
         $this->assertDatabaseHas('community_registrations', [
             'community_event_id' => $event->id,
@@ -86,7 +86,7 @@ class CommunityTest extends TestCase
             'phone' => '+91 98765 43210',
         ]);
 
-        $this->get("/community/{$event->slug}")->assertSee("You're on the list", false);
+        $this->get("/bg-community/{$event->slug}")->assertSee("You're on the list", false);
     }
 
     public function test_sign_up_validation_and_duplicates(): void
@@ -111,19 +111,19 @@ class CommunityTest extends TestCase
         $full = $this->meetup(['slug' => 'full', 'capacity' => 1]);
         $this->signup($full, ['email' => 'first@example.com'])->assertSessionHas('registered');
         $this->signup($full, ['email' => 'second@example.com'])->assertSessionHas('closed');
-        $this->get('/community/full')->assertSee('fully booked');
+        $this->get('/bg-community/full')->assertSee('fully booked');
 
         $closed = $this->meetup(['slug' => 'closed', 'registration_open' => false]);
         $this->signup($closed)->assertSessionHas('closed');
 
         $past = $this->meetup(['slug' => 'past', 'starts_at' => now()->subWeek(), 'ends_at' => now()->subWeek()->addHours(2)]);
         $this->signup($past)->assertSessionHas('closed');
-        $this->get('/community')->assertSee('Past meetups');
+        $this->get('/bg-community')->assertSee('Past meetups');
 
         $draft = $this->meetup(['slug' => 'draft', 'is_published' => false]);
-        $this->get('/community/draft')->assertNotFound();
+        $this->get('/bg-community/draft')->assertNotFound();
         $this->signup($draft)->assertNotFound();
-        $this->actingAs($this->admin())->get('/community/draft')->assertOk()->assertSee('Draft');
+        $this->actingAs($this->admin())->get('/bg-community/draft')->assertOk()->assertSee('Draft');
 
         $this->assertSame(1, CommunityRegistration::count());
     }
@@ -155,6 +155,15 @@ class CommunityTest extends TestCase
         $registration = CommunityRegistration::where('email', 'ravi@example.com')->first();
         $this->actingAs($admin)->delete("/admin/community-events/{$event->slug}/registrations/{$registration->id}")->assertRedirect();
         $this->assertSame(1, $event->registrations()->count());
+    }
+
+    public function test_old_community_urls_redirect_to_bg_community(): void
+    {
+        $event = $this->meetup();
+
+        $this->get('/community')->assertStatus(301)->assertRedirect('/bg-community');
+        $this->get("/community/{$event->slug}")->assertStatus(301)->assertRedirect("/bg-community/{$event->slug}");
+        $this->assertSame(url('/bg-community'), route('community.index'));
     }
 
     public function test_admin_pages_require_admin(): void

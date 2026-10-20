@@ -47,11 +47,14 @@ Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->nam
 Route::get('/blog/{blogPost:slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
 // BG Community (business networking meetups)
-Route::get('/community', [\App\Http\Controllers\CommunityController::class, 'index'])->name('community.index');
-Route::get('/community/{event:slug}', [\App\Http\Controllers\CommunityController::class, 'show'])->name('community.show');
-Route::post('/community/{event:slug}/register', [\App\Http\Controllers\CommunityController::class, 'register'])
+Route::get('/bg-community', [\App\Http\Controllers\CommunityController::class, 'index'])->name('community.index');
+Route::get('/bg-community/{event:slug}', [\App\Http\Controllers\CommunityController::class, 'show'])->name('community.show');
+Route::post('/bg-community/{event:slug}/register', [\App\Http\Controllers\CommunityController::class, 'register'])
     ->middleware('throttle:6,1')
     ->name('community.register');
+// Old /community URLs
+Route::permanentRedirect('/community', '/bg-community');
+Route::get('/community/{slug}', fn (string $slug) => redirect('/bg-community/' . rawurlencode($slug), 301));
 
 // Newsletter Routes
 Route::post('/newsletter/subscribe', [\App\Http\Controllers\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');

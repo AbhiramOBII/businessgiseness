@@ -130,7 +130,7 @@
             <div>
                 <label for="slug" class="{{ $label }}">URL slug <span class="text-gray-400 font-normal">(optional — generated from the title)</span></label>
                 <div class="flex items-center">
-                    <span class="text-sm text-gray-500 mr-1">{{ url('/community') }}/</span>
+                    <span class="text-sm text-gray-500 mr-1">{{ route('community.index') }}/</span>
                     <input id="slug" name="slug" type="text" class="{{ $input }}" value="{{ old('slug', $event->slug) }}">
                 </div>
                 @error('slug')<p class="{{ $err }}">{{ $message }}</p>@enderror
