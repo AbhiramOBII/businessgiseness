@@ -4,33 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
-use App\Services\YouTubeStats;
+use App\Support\Seo;
 use Illuminate\Http\Request;
 
 class ContentController extends Controller
 {
     public function index()
     {
-        $hero   = SiteSetting::getGroup('hero');
-        $site   = SiteSetting::getGroup('site');
-        $social = SiteSetting::getGroup('social');
-        $youtube = YouTubeStats::stored();
-        $youtubeKeySet = (bool) YouTubeStats::apiKey();
+        $hero     = SiteSetting::getGroup('hero');
+        $site     = SiteSetting::getGroup('site');
+        $social   = SiteSetting::getGroup('social');
+        $audience = SiteSetting::getGroup('audience');
+        $socials  = Seo::socials();
 
-        return view('admin.content', compact('hero', 'site', 'social', 'youtube', 'youtubeKeySet'));
-    }
-
-    public function syncYoutube()
-    {
-        if (!YouTubeStats::apiKey()) {
-            return back()->with('error_youtube', 'YOUTUBE_API_KEY is not set in .env.');
-        }
-
-        $data = YouTubeStats::sync();
-
-        return $data
-            ? back()->with('success_youtube', 'YouTube stats updated: ' . number_format($data['totals']['subscribers']) . ' subscribers, ' . number_format($data['totals']['views']) . ' views.')
-            : back()->with('error_youtube', 'Could not reach YouTube. Check the API key and channel URLs, then try again (details in storage/logs/laravel.log).');
+        return view('admin.content', compact('hero', 'site', 'social', 'audience', 'socials'));
     }
 
     public function updateHero(Request $request)
@@ -41,17 +28,33 @@ class ContentController extends Controller
             'hero_title_line3_gold' => 'required|string|max:100',
             'hero_badge_text'       => 'nullable|string|max:60',
             'hero_subtitle'         => 'required|string|max:500',
-            'hero_stat_1_value'     => 'nullable|string|max:20',
-            'hero_stat_1_label'     => 'nullable|string|max:40',
-            'hero_stat_2_value'     => 'nullable|string|max:20',
-            'hero_stat_2_label'     => 'nullable|string|max:40',
-            'hero_stat_3_value'     => 'nullable|string|max:20',
-            'hero_stat_3_label'     => 'nullable|string|max:40',
         ]);
 
         SiteSetting::setMany($validated, 'hero');
 
         return back()->with('success_hero', 'Hero section saved successfully.');
+    }
+
+    /**
+     * Subscriber and view counts for each YouTube channel, entered by hand.
+     * The site shows the totals (hero, footer, llms.txt).
+     */
+    public function updateAudience(Request $request)
+    {
+        $rules = [];
+        foreach (array_keys(Seo::AUDIENCE_CHANNELS) as $key) {
+            $rules["audience_{$key}_subscribers"] = 'nullable|integer|min:0|max:1000000000';
+            $rules["audience_{$key}_views"]       = 'nullable|integer|min:0|max:100000000000';
+        }
+
+        $validated = $request->validate($rules, [
+            '*.integer' => 'Enter a whole number without commas or K/M (e.g. 15200).',
+        ]);
+
+        SiteSetting::setMany($validated, 'audience');
+        SiteSetting::set('audience_updated_at', now()->toDateString(), 'audience');
+
+        return back()->with('success_audience', 'Audience stats saved.');
     }
 
     public function updateSite(Request $request)
@@ -79,13 +82,7 @@ class ContentController extends Controller
             'social_linkedin'        => 'nullable|url|max:200',
         ]);
 
-        $handlesBefore = YouTubeStats::handles();
         SiteSetting::setMany($validated, 'social');
-
-        // Channel changed: refresh live stats so the site doesn't show the old channel's numbers
-        if (YouTubeStats::handles() !== $handlesBefore && YouTubeStats::apiKey()) {
-            YouTubeStats::sync();
-        }
 
         return back()->with('success_social', 'Social links saved successfully.');
     }

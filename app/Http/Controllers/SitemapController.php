@@ -6,10 +6,10 @@ use App\Models\Episode;
 use App\Models\Guest;
 use App\Models\BlogPost;
 use App\Models\SiteSetting;
-use App\Services\YouTubeStats;
 use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 
 class SitemapController extends Controller
 {
@@ -67,14 +67,13 @@ class SitemapController extends Controller
         $md[] = '- Produced by: ' . Seo::PRODUCER_NAME . ' (' . Seo::PRODUCER_URL . ')';
         $md[] = '- Format: long-form video and audio conversations with founders and entrepreneurs';
         $md[] = '- Published episodes on this site: ' . Episode::published()->count();
-        if ($youtube = YouTubeStats::stored()) {
-            $asOf = \Illuminate\Support\Carbon::parse($youtube['synced_at'])->format('j F Y');
-            $md[] = '- YouTube audience (as of ' . $asOf . '): ' . number_format($youtube['totals']['subscribers']) . ' subscribers and '
-                . number_format($youtube['totals']['views']) . ' views across ' . count($youtube['channels']) . ' channels';
-            foreach ($youtube['channels'] as $channel) {
-                $md[] = '  - ' . $channel['title'] . ' (' . $channel['handle'] . '): '
-                    . ($channel['subscribers'] !== null ? number_format($channel['subscribers']) . ' subscribers, ' : '')
-                    . number_format($channel['views']) . ' views, ' . $channel['videos'] . ' videos';
+        if ($audience = Seo::audience()) {
+            $asOf = $audience['updated_at'] ? ' (as of ' . \Illuminate\Support\Carbon::parse($audience['updated_at'])->format('F Y') . ')' : '';
+            $md[] = '- YouTube audience' . $asOf . ': ' . number_format($audience['subscribers']) . ' subscribers and '
+                . number_format($audience['views']) . ' views across ' . count($audience['channels']) . ' ' . Str::plural('channel', count($audience['channels']));
+            foreach ($audience['channels'] as $channel) {
+                $md[] = '  - ' . $channel['label'] . ($channel['handle'] ? ' (' . $channel['handle'] . ')' : '') . ': '
+                    . number_format($channel['subscribers']) . ' subscribers, ' . number_format($channel['views']) . ' views';
             }
         } else {
             foreach ($stats as $stat) {

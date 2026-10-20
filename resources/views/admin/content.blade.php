@@ -7,67 +7,82 @@
 @section('content')
 <div class="space-y-8">
 
-    {{-- ── Live YouTube stats ─────────────────────────────────────── --}}
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-200 bg-gray-50">
+    {{-- ── Audience stats (entered by hand) ───────────────────────── --}}
+    @php $audienceTotals = \App\Support\Seo::audience(); @endphp
+    <div id="audience" class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                     <i class="fab fa-youtube text-red-500 text-sm"></i>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-gray-800">Live YouTube Stats</h3>
+                    <h3 class="font-semibold text-gray-800">Audience Stats</h3>
                     <p class="text-xs text-gray-500">
-                        Subscribers and views from both channels, refreshed automatically every few hours
-                        @if($youtube) · last updated {{ \Illuminate\Support\Carbon::parse($youtube['synced_at'])->diffForHumans() }} @endif
+                        YouTube subscribers and views for each channel — the site shows the totals on the homepage and footer
+                        @if(!empty($audience['audience_updated_at'])) · last updated {{ \Illuminate\Support\Carbon::parse($audience['audience_updated_at'])->format('j M Y') }} @endif
                     </p>
                 </div>
             </div>
-            @if($youtubeKeySet)
-                <form action="{{ route('admin.content.youtube-sync') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
-                        <i class="fas fa-sync-alt"></i> Sync now
-                    </button>
-                </form>
-            @endif
         </div>
 
-        <div class="p-6">
-            @if(session('success_youtube'))
-                <div class="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
-                    <i class="fas fa-check-circle"></i> {{ session('success_youtube') }}
-                </div>
-            @endif
-            @if(session('error_youtube'))
-                <div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
-                    <i class="fas fa-exclamation-circle"></i> {{ session('error_youtube') }}
-                </div>
-            @endif
+        @if(session('success_audience'))
+            <div class="mx-6 mt-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> {{ session('success_audience') }}
+            </div>
+        @endif
 
-            @if(!$youtubeKeySet)
-                <div class="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-                    <i class="fas fa-key"></i>
-                    Live stats are off. Add a <strong>YouTube Data API v3</strong> key as <code class="bg-white px-1 rounded">YOUTUBE_API_KEY</code> in the server's <code class="bg-white px-1 rounded">.env</code> file to enable them. Until then, the hero stats below are shown.
-                </div>
-            @elseif($youtube)
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="rounded-lg bg-gray-900 text-white p-4">
-                        <p class="text-xs uppercase tracking-wider text-gray-400">Total</p>
-                        <p class="mt-1 text-2xl font-bold">{{ number_format($youtube['totals']['subscribers']) }} <span class="text-sm font-normal text-gray-400">subscribers</span></p>
-                        <p class="text-sm text-gray-300">{{ number_format($youtube['totals']['views']) }} views</p>
-                    </div>
-                    @foreach($youtube['channels'] as $channel)
-                        <div class="rounded-lg border border-gray-200 p-4">
-                            <p class="text-xs text-gray-500 truncate" title="{{ $channel['title'] }}">{{ $channel['title'] }} · {{ $channel['handle'] }}</p>
-                            <p class="mt-1 text-xl font-bold text-gray-900">{{ $channel['subscribers'] !== null ? number_format($channel['subscribers']) : 'Hidden' }} <span class="text-sm font-normal text-gray-500">subscribers</span></p>
-                            <p class="text-sm text-gray-600">{{ number_format($channel['views']) }} views · {{ $channel['videos'] }} videos</p>
+        <form action="{{ route('admin.content.audience') }}" method="POST" class="p-6 space-y-5">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                @foreach(\App\Support\Seo::AUDIENCE_CHANNELS as $key => $channel)
+                    @php $channelUrl = $socials[$key === 'kn' ? 'youtube' : 'youtube_english'] ?? null; @endphp
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-700">{{ $channel['label'] }}</p>
+                            @if($channelUrl)
+                                <a href="{{ $channelUrl }}" target="_blank" rel="noopener" class="text-xs text-blue-600 hover:underline">
+                                    {{ \App\Support\Seo::youtubeHandle($channelUrl) ?? 'Open channel' }} <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            @endif
                         </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-sm text-gray-600">No stats fetched yet — click <strong>Sync now</strong>.</p>
-            @endif
-        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="audience_{{ $key }}_subscribers" class="block text-xs text-gray-500 mb-1">Subscribers</label>
+                                <input type="number" min="0" step="1" id="audience_{{ $key }}_subscribers" name="audience_{{ $key }}_subscribers"
+                                       value="{{ old("audience_{$key}_subscribers", $audience["audience_{$key}_subscribers"] ?? '') }}"
+                                       placeholder="e.g. 5330"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-red-300 outline-none @error("audience_{$key}_subscribers") border-red-400 @enderror">
+                                @error("audience_{$key}_subscribers")<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label for="audience_{{ $key }}_views" class="block text-xs text-gray-500 mb-1">Total views</label>
+                                <input type="number" min="0" step="1" id="audience_{{ $key }}_views" name="audience_{{ $key }}_views"
+                                       value="{{ old("audience_{$key}_views", $audience["audience_{$key}_views"] ?? '') }}"
+                                       placeholder="e.g. 80000"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-red-300 outline-none @error("audience_{$key}_views") border-red-400 @enderror">
+                                @error("audience_{$key}_views")<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <p class="text-xs text-gray-500">
+                    @if($audienceTotals)
+                        Shown on the site as <strong>{{ \App\Support\Seo::compact($audienceTotals['subscribers']) }} Subscribers</strong>
+                        and <strong>{{ \App\Support\Seo::compact($audienceTotals['views']) }} Views</strong>, plus the live count of published episodes.
+                    @else
+                        Enter whole numbers (e.g. 5330, not 5.33K). The site rounds them for display.
+                    @endif
+                    Find them in YouTube Studio → Analytics, or the subscriber count on the channel page.
+                </p>
+                <button type="submit"
+                        class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
+                    <i class="fas fa-save"></i> Save Audience Stats
+                </button>
+            </div>
+        </form>
     </div>
 
     {{-- ── 1. Home Hero ─────────────────────────────────────────────── --}}
@@ -140,31 +155,10 @@
                 </div>
             </div>
 
-            {{-- Stats --}}
-            <div>
-                <h4 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Stats</h4>
-                @if($youtube)
-                    <p class="text-xs text-gray-500 mb-3">
-                        <i class="fas fa-info-circle text-blue-500"></i>
-                        Live YouTube numbers are shown on the site (see "Live YouTube Stats" below). These values are only used if live stats are unavailable.
-                    </p>
-                @endif
-                <div class="grid grid-cols-3 gap-4">
-                    @foreach([1,2,3] as $i)
-                    <div class="border border-gray-200 rounded-lg p-3 space-y-2">
-                        <p class="text-xs text-gray-500 font-medium">Stat {{ $i }}</p>
-                        <input type="text" name="hero_stat_{{ $i }}_value"
-                               value="{{ old("hero_stat_{$i}_value", $hero["hero_stat_{$i}_value"] ?? '') }}"
-                               placeholder="e.g. 23"
-                               class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:ring-2 focus:ring-yellow-400 outline-none">
-                        <input type="text" name="hero_stat_{{ $i }}_label"
-                               value="{{ old("hero_stat_{$i}_label", $hero["hero_stat_{$i}_label"] ?? '') }}"
-                               placeholder="e.g. Episodes"
-                               class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs text-center focus:ring-2 focus:ring-yellow-400 outline-none">
-                    </div>
-                    @endforeach
-                </div>
-            </div>
+            <p class="text-xs text-gray-500">
+                <i class="fas fa-info-circle text-blue-500"></i>
+                The stats under the headline (episodes, subscribers, views) come from <a href="#audience" class="text-blue-600 hover:underline">Audience Stats</a> above.
+            </p>
 
             <div class="flex justify-end">
                 <button type="submit"

@@ -5,7 +5,6 @@ namespace App\Support;
 use App\Models\Episode;
 use App\Models\Guest;
 use App\Models\SiteSetting;
-use App\Services\YouTubeStats;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -76,22 +75,67 @@ class Seo
     }
 
     /**
-     * Audience stats for the hero, footer and llms.txt.
+     * YouTube channels whose numbers are entered by hand in Admin > Content > Audience Stats.
+     * Key => [label, URL setting].
+     */
+    public const AUDIENCE_CHANNELS = [
+        'kn' => ['label' => 'Kannada channel', 'url_setting' => 'social_youtube'],
+        'en' => ['label' => 'English channel', 'url_setting' => 'social_youtube_english'],
+    ];
+
+    /**
+     * Manually entered audience numbers per channel, plus totals.
+     * Null when nothing has been entered yet.
      *
-     * Uses live YouTube numbers (both channels combined) plus the real published
-     * episode count when available; otherwise falls back to the hand-entered
-     * hero stats in Admin > Content. Each item: value, label, and live flag.
+     * @return array{channels: array, subscribers: int, views: int, updated_at: ?string}|null
+     */
+    public static function audience(): ?array
+    {
+        $socials = self::socials();
+        $channels = [];
+
+        foreach (self::AUDIENCE_CHANNELS as $key => $channel) {
+            $subscribers = SiteSetting::get("audience_{$key}_subscribers");
+            $views = SiteSetting::get("audience_{$key}_views");
+            if ($subscribers === null && $views === null) {
+                continue;
+            }
+            $url = $socials[$key === 'kn' ? 'youtube' : 'youtube_english'] ?? null;
+            $channels[] = [
+                'key' => $key,
+                'label' => $channel['label'],
+                'handle' => self::youtubeHandle($url),
+                'url' => $url,
+                'subscribers' => (int) $subscribers,
+                'views' => (int) $views,
+            ];
+        }
+
+        if (!$channels) {
+            return null;
+        }
+
+        return [
+            'channels' => $channels,
+            'subscribers' => array_sum(array_column($channels, 'subscribers')),
+            'views' => array_sum(array_column($channels, 'views')),
+            'updated_at' => SiteSetting::get('audience_updated_at'),
+        ];
+    }
+
+    /**
+     * Stats for the hero, footer and llms.txt: published episode count plus
+     * subscribers/views totalled across both YouTube channels. Falls back to the
+     * older free-form hero stats until audience numbers have been entered.
      */
     public static function stats(): array
     {
-        YouTubeStats::refreshInBackgroundIfStale();
-
-        if ($youtube = YouTubeStats::stored()) {
-            return Cache::remember('seo_live_stats_' . md5($youtube['synced_at']), 600, fn () => [
-                ['value' => (string) Episode::published()->count(), 'label' => 'Episodes', 'live' => true],
-                ['value' => YouTubeStats::compact($youtube['totals']['subscribers']), 'label' => 'Subscribers', 'live' => true],
-                ['value' => YouTubeStats::compact($youtube['totals']['views']), 'label' => 'Views', 'live' => true],
-            ]);
+        if ($audience = self::audience()) {
+            return array_values(array_filter([
+                ['value' => (string) Episode::published()->count(), 'label' => 'Episodes'],
+                $audience['subscribers'] ? ['value' => self::compact($audience['subscribers']), 'label' => 'Subscribers'] : null,
+                $audience['views'] ? ['value' => self::compact($audience['views']), 'label' => 'Views'] : null,
+            ]));
         }
 
         $stats = [];
@@ -99,11 +143,36 @@ class Seo
             $value = SiteSetting::get("hero_stat_{$i}_value");
             $label = SiteSetting::get("hero_stat_{$i}_label");
             if ($value && $label) {
-                $stats[] = ['value' => $value, 'label' => $label, 'live' => false];
+                $stats[] = ['value' => $value, 'label' => $label];
             }
         }
 
         return $stats;
+    }
+
+    /**
+     * 15234 → "15.2K", 1234567 → "1.2M", 950 → "950" (rounded down, never overstated).
+     */
+    public static function compact(int $number): string
+    {
+        foreach ([1_000_000_000 => 'B', 1_000_000 => 'M', 1_000 => 'K'] as $size => $suffix) {
+            if ($number >= $size) {
+                $value = $number / $size;
+                $formatted = $value >= 100 ? number_format(floor($value)) : rtrim(rtrim(number_format(floor($value * 10) / 10, 1), '0'), '.');
+
+                return $formatted . $suffix;
+            }
+        }
+
+        return (string) $number;
+    }
+
+    /**
+     * "@Handle" from a YouTube channel URL, or null.
+     */
+    public static function youtubeHandle(?string $url): ?string
+    {
+        return $url && preg_match('#youtube\.com/(@[\w.\-]+)#i', $url, $m) ? $m[1] : null;
     }
 
     /**
@@ -160,10 +229,10 @@ class Seo
         }
 
         $platforms = [];
-        if ($handle = YouTubeStats::handleFromUrl($socials['youtube'] ?? null)) {
+        if ($handle = self::youtubeHandle($socials['youtube'] ?? null)) {
             $platforms[] = 'YouTube (Kannada channel ' . $handle . ')';
         }
-        if ($handle = YouTubeStats::handleFromUrl($socials['youtube_english'] ?? null)) {
+        if ($handle = self::youtubeHandle($socials['youtube_english'] ?? null)) {
             $platforms[] = 'YouTube (English channel ' . $handle . ')';
         }
         if (isset($socials['spotify'])) {
