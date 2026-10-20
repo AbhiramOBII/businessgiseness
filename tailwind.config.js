@@ -17,7 +17,7 @@ export default {
                 'brand-white': '#FFFFFF'
             },
             fontFamily: {
-                sans: ['Satoshi', 'Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
         },
     },
