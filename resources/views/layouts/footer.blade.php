@@ -129,6 +129,37 @@
         </div>
     </div>
 
+    {{-- ── The Obii family ───────────────────────────────────────── --}}
+    @php
+        $family = [
+            ['name' => 'Obii Kriationz',   'url' => 'https://www.obiikriationz.com/', 'logo' => 'images/brands/obii-kriationz.svg',   'class' => 'h-7'],
+            ['name' => 'ObiiNxt',          'url' => 'https://www.obiinxt.com/',       'logo' => 'images/brands/obiinxt.png',          'class' => 'h-7'],
+            ['name' => 'Obii Studios',     'url' => null,                             'logo' => 'images/brands/obii-studios.png',     'class' => 'h-10'],
+            ['name' => 'Digital Dopamine', 'url' => 'https://digitaldopamine.in/',    'logo' => 'images/brands/digital-dopamine.png', 'class' => 'h-14 brightness-0 invert'],
+        ];
+    @endphp
+    <div class="border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/50 whitespace-nowrap">The Obii family</p>
+            <ul class="flex flex-wrap items-center gap-x-10 gap-y-6">
+                @foreach($family as $brand)
+                    <li>
+                        @if($brand['url'])
+                            <a href="{{ $brand['url'] }}" target="_blank" rel="noopener" title="{{ $brand['name'] }}"
+                               class="block opacity-70 hover:opacity-100 transition-opacity">
+                                <img src="{{ asset($brand['logo']) }}" alt="{{ $brand['name'] }}" class="{{ $brand['class'] }} w-auto object-contain" loading="lazy">
+                            </a>
+                        @else
+                            <span class="block opacity-70" title="{{ $brand['name'] }}">
+                                <img src="{{ asset($brand['logo']) }}" alt="{{ $brand['name'] }}" class="{{ $brand['class'] }} w-auto object-contain" loading="lazy">
+                            </span>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+
     {{-- ── Bottom bar ────────────────────────────────────────────── --}}
     <div class="border-t border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/40">
