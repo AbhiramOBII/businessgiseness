@@ -46,6 +46,13 @@ Route::get('/guests/{guest:slug}', [\App\Http\Controllers\GuestController::class
 Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{blogPost:slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
+// BG Community (business networking meetups)
+Route::get('/community', [\App\Http\Controllers\CommunityController::class, 'index'])->name('community.index');
+Route::get('/community/{event:slug}', [\App\Http\Controllers\CommunityController::class, 'show'])->name('community.show');
+Route::post('/community/{event:slug}/register', [\App\Http\Controllers\CommunityController::class, 'register'])
+    ->middleware('throttle:6,1')
+    ->name('community.register');
+
 // Newsletter Routes
 Route::post('/newsletter/subscribe', [\App\Http\Controllers\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 Route::post('/newsletter/unsubscribe', [\App\Http\Controllers\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
@@ -86,6 +93,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Episode Management
     Route::resource('episodes', \App\Http\Controllers\Admin\EpisodeController::class);
+
+    // BG Community meetups and sign-ups
+    Route::resource('community-events', \App\Http\Controllers\Admin\CommunityEventController::class)->parameters(['community-events' => 'communityEvent']);
+    Route::get('community-events/{communityEvent}/export', [\App\Http\Controllers\Admin\CommunityEventController::class, 'export'])->name('community-events.export');
+    Route::delete('community-events/{communityEvent}/registrations/{registration}', [\App\Http\Controllers\Admin\CommunityEventController::class, 'destroyRegistration'])->name('community-events.registrations.destroy');
     
     // Guest Management
     Route::resource('guests', \App\Http\Controllers\Admin\GuestController::class);

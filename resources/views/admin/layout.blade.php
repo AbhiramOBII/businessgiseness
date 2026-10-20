@@ -27,8 +27,12 @@
         body {
             font-family: 'Figtree', system-ui, sans-serif;
         }
+
+        [x-cloak] { display: none !important; }
     </style>
-    
+
+    {{-- Livewire ships Alpine.js, used by the Settings tabs and Community pages --}}
+    @livewireStyles
     @stack('head')
 </head>
 <body class="font-sans antialiased bg-gray-100">
@@ -71,6 +75,11 @@
                 <a href="{{ route('admin.blog.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.blog.*') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
                     <i class="fas fa-blog mr-3"></i>
                     Blog Posts
+                </a>
+
+                <a href="{{ route('admin.community-events.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.community-events.*') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
+                    <i class="fas fa-handshake mr-3"></i>
+                    BG Community
                 </a>
                 
                 <a href="{{ route('admin.newsletter-subscriptions.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.newsletter-subscriptions.*') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
@@ -150,5 +159,7 @@
             </main>
         </div>
     </div>
+
+    @livewireScripts
 </body>
 </html>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Episode;
 use App\Models\Guest;
 use App\Models\BlogPost;
+use App\Models\CommunityEvent;
 use App\Models\SiteSetting;
 use App\Support\Seo;
 use Illuminate\Http\Request;
@@ -102,6 +103,15 @@ class SitemapController extends Controller
         $md[] = '- [Kannada episodes](' . route('episodes.index', ['language' => 'kn']) . ')';
         $md[] = '- [Guests](' . route('guests.index') . ')';
         $md[] = '- [Blog](' . route('blog.index') . '): business lessons drawn from the conversations';
+        $md[] = '- [BG Community](' . route('community.index') . '): business networking meetups where founders and MSME owners meet potential customers, vendors and partners';
+        $upcomingMeetups = CommunityEvent::published()->upcoming()->orderBy('starts_at')->limit(5)->get();
+        if ($upcomingMeetups->isNotEmpty()) {
+            $md[] = '';
+            $md[] = '## Upcoming BG Community meetups';
+            foreach ($upcomingMeetups as $meetup) {
+                $md[] = '- [' . $meetup->title . '](' . route('community.show', $meetup) . '): ' . $meetup->when_label . ', ' . $meetup->where_label;
+            }
+        }
         $md[] = '';
         $md[] = '## Latest episodes';
         foreach ($episodes as $episode) {
@@ -135,6 +145,7 @@ class SitemapController extends Controller
         $episodes  = Episode::published()->orderByDesc('published_at')->get();
         $guests    = Guest::orderBy('name')->get();
         $blogPosts = BlogPost::published()->orderByDesc('published_at')->get();
+        $communityEvents = CommunityEvent::published()->orderByDesc('starts_at')->get();
 
         $xml = new \XMLWriter();
         $xml->openMemory();
@@ -153,6 +164,7 @@ class SitemapController extends Controller
         $this->addUrl($xml, route('episodes.index'), $latestEpisode, 'daily', '0.9');
         $this->addUrl($xml, route('guests.index'), now()->startOfWeek()->toAtomString(), 'weekly', '0.7');
         $this->addUrl($xml, route('blog.index'), now()->toAtomString(), 'weekly', '0.7');
+        $this->addUrl($xml, route('community.index'), $communityEvents->max('updated_at')?->tz('UTC')->toAtomString(), 'weekly', '0.8');
         $this->addUrl($xml, route('privacy-policy'), '2025-01-01T00:00:00+00:00', 'yearly', '0.3');
         $this->addUrl($xml, route('terms-of-use'), '2025-01-01T00:00:00+00:00', 'yearly', '0.3');
         $this->addUrl($xml, route('disclaimer'), '2025-01-01T00:00:00+00:00', 'yearly', '0.3');
@@ -170,6 +182,10 @@ class SitemapController extends Controller
         foreach ($blogPosts as $post) {
             $lastMod = ($post->updated_at ?: $post->published_at)?->tz('UTC')->toAtomString();
             $this->addUrl($xml, route('blog.show', $post), $lastMod, 'weekly', '0.7');
+        }
+
+        foreach ($communityEvents as $event) {
+            $this->addUrl($xml, route('community.show', $event), $event->updated_at?->tz('UTC')->toAtomString(), 'weekly', '0.6');
         }
 
         $xml->endElement();

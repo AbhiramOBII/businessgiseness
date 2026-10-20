@@ -28,6 +28,7 @@
         'The Show' => [
             ['label' => 'About the Podcast',        'url' => route('about-business-giseness-podcast')],
             ['label' => 'Kannada Business Podcast', 'url' => route('kannada-business-podcast')],
+            ['label' => 'BG Community',             'url' => route('community.index')],
             ['label' => 'Blog & Insights',          'url' => route('blog.index')],
             ['label' => 'FAQ',                      'url' => route('home') . '#faq'],
         ],

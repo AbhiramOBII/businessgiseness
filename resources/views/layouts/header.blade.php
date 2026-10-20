@@ -89,6 +89,8 @@
                class="text-brand-white hover:text-brand-gold font-medium transition-colors">Guests</a>
             <a href="{{ route('blog.index') }}"
                class="text-brand-white hover:text-brand-gold font-medium transition-colors">Blog</a>
+            <a href="{{ route('community.index') }}"
+               class="text-brand-white hover:text-brand-gold font-medium transition-colors">Community</a>
             <a href="tel:+919964102103"
                class="bg-brand-gold text-brand-dark px-5 py-2 rounded-full font-semibold hover:bg-yellow-400 transition-colors"
                style="white-space:nowrap;">Collaborate</a>
@@ -160,6 +162,10 @@
             <a href="{{ route('blog.index') }}" @click="open = false"
                class="flex items-center gap-4 text-brand-white hover:text-brand-gold font-medium text-lg transition-colors group">
                 <i class="fas fa-blog text-brand-gold group-hover:scale-110 transition-transform"></i>Blog
+            </a>
+            <a href="{{ route('community.index') }}" @click="open = false"
+               class="flex items-center gap-4 text-brand-white hover:text-brand-gold font-medium text-lg transition-colors group">
+                <i class="fas fa-handshake text-brand-gold group-hover:scale-110 transition-transform"></i>Community
             </a>
             <a href="tel:+919964102103" @click="open = false"
                class="flex items-center gap-3 bg-brand-gold text-brand-dark px-6 py-3 rounded-full font-semibold hover:bg-yellow-400 transition-colors text-lg mt-4">
