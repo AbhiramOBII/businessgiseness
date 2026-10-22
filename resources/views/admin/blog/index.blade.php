@@ -136,7 +136,13 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($post->is_published)
+                                    @if($post->isScheduled())
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                              title="Hidden from the blog until {{ $post->published_at->format('M j, Y g:i A') }}">
+                                            <i class="fas fa-clock mr-1"></i>Scheduled
+                                        </span>
+                                        <div class="mt-1 text-xs text-blue-700">Goes live {{ $post->published_at->format('M j, g:i A') }}</div>
+                                    @elseif($post->is_published)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <i class="fas fa-check-circle mr-1"></i>Published
                                         </span>

@@ -201,9 +201,34 @@ class BlogPost extends Model
 
     public function isPublished()
     {
-        return $this->is_published && 
-               $this->published_at && 
+        return $this->is_published &&
+               $this->published_at &&
                $this->published_at->isPast();
+    }
+
+    /**
+     * Marked published, but the publish date is still in the future — hidden from the blog until then.
+     */
+    public function isScheduled(): bool
+    {
+        return $this->is_published && $this->published_at && $this->published_at->isFuture();
+    }
+
+    /**
+     * Admin flash message after saving, explaining whether the post is live.
+     */
+    public function visibilityMessage(string $action): string
+    {
+        if ($this->isScheduled()) {
+            return "Blog post {$action}. It's scheduled — it will appear on the blog on "
+                . $this->published_at->format('M j, Y \a\t g:i A') . '. To show it now, set the Publish Date to now or earlier.';
+        }
+
+        if (!$this->is_published) {
+            return "Blog post {$action} as a draft — it won't appear on the blog until you publish it.";
+        }
+
+        return "Blog post {$action} and live on the blog.";
     }
 
     // Get all unique categories

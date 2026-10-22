@@ -12,10 +12,17 @@
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {{ $blogPost->category }}
                 </span>
-                @if($blogPost->is_published)
+                @if($blogPost->isScheduled())
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <i class="fas fa-clock mr-1"></i>Scheduled · goes live {{ $blogPost->published_at->format('M j, Y g:i A') }}
+                    </span>
+                @elseif($blogPost->is_published)
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         <i class="fas fa-check-circle mr-1"></i>Published
                     </span>
+                    <a href="{{ route('blog.show', $blogPost) }}" target="_blank" class="text-sm text-blue-600 hover:underline">
+                        <i class="fas fa-external-link-alt mr-1"></i>View on site
+                    </a>
                 @else
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                         <i class="fas fa-edit mr-1"></i>Draft

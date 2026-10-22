@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // India time: publish dates entered in the admin (and meetup times) are IST.
+    // With UTC, a post set to "now" stayed hidden for 5.5 hours as "future".
+    'timezone' => env('APP_TIMEZONE', 'Asia/Kolkata'),
 
     /*
     |--------------------------------------------------------------------------

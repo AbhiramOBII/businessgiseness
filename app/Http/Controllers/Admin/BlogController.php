@@ -106,6 +106,9 @@ class BlogController extends Controller
             $validated['slug'] = Str::slug($validated['title']);
         }
 
+        // An unticked checkbox sends nothing, so read it as a boolean
+        $validated['is_published'] = $request->boolean('is_published');
+
         // Set published_at if publishing
         if ($validated['is_published'] && empty($validated['published_at'])) {
             $validated['published_at'] = now();
@@ -115,7 +118,7 @@ class BlogController extends Controller
 
         return redirect()
             ->route('admin.blog.show', $blogPost)
-            ->with('success', 'Blog post created successfully!');
+            ->with('success', $blogPost->visibilityMessage('created'));
     }
 
     /**
@@ -177,16 +180,20 @@ class BlogController extends Controller
             $validated['slug'] = Str::slug($validated['title']);
         }
 
-        // Set published_at if publishing for the first time
-        if ($validated['is_published'] && !$blogPost->published_at && empty($validated['published_at'])) {
-            $validated['published_at'] = now();
+        // An unticked checkbox sends nothing, so read it as a boolean
+        $validated['is_published'] = $request->boolean('is_published');
+
+        // Empty publish date = "now" (keeping the original date if it already had one),
+        // so a published post can never end up without a date and vanish from the blog
+        if ($validated['is_published'] && empty($validated['published_at'])) {
+            $validated['published_at'] = $blogPost->published_at ?? now();
         }
 
         $blogPost->update($validated);
 
         return redirect()
             ->route('admin.blog.show', $blogPost)
-            ->with('success', 'Blog post updated successfully!');
+            ->with('success', $blogPost->visibilityMessage('updated'));
     }
 
     /**
