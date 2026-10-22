@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         // MAIL_MAILER=zeptomail sends mail through the ZeptoMail API
         Mail::extend('zeptomail', fn (array $config) => new ZeptoMailTransport(
             (string) ($config['key'] ?? ''),
-            $config['host'] ?? 'api.zeptomail.in',
+            $config['host'] ?? 'cpaas.zoho.in',
         ));
     }
 }

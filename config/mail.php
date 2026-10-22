@@ -52,7 +52,7 @@ return [
         // ZeptoMail (Zoho) email API — see App\Mail\Transport\ZeptoMailTransport
         'zeptomail' => [
             'transport' => 'zeptomail',
-            'host' => env('ZEPTOMAIL_HOST', 'api.zeptomail.in'),
+            'host' => env('ZEPTOMAIL_HOST', 'cpaas.zoho.in'),
             'key' => env('ZEPTOMAIL_API_KEY'),
         ],
 

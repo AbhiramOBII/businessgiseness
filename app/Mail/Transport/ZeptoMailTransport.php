@@ -17,7 +17,7 @@ class ZeptoMailTransport extends AbstractTransport
 {
     public function __construct(
         private readonly string $apiKey,
-        private readonly string $host = 'api.zeptomail.in',
+        private readonly string $host = 'cpaas.zoho.in',
         private readonly int $timeout = 15,
     ) {
         parent::__construct();
