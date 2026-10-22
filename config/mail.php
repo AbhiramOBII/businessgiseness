@@ -49,6 +49,13 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        // ZeptoMail (Zoho) email API — see App\Mail\Transport\ZeptoMailTransport
+        'zeptomail' => [
+            'transport' => 'zeptomail',
+            'host' => env('ZEPTOMAIL_HOST', 'api.zeptomail.in'),
+            'key' => env('ZEPTOMAIL_API_KEY'),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

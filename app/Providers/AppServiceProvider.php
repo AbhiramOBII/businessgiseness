@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Mail\Transport\ZeptoMailTransport;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,5 +27,11 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction() && str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
+
+        // MAIL_MAILER=zeptomail sends mail through the ZeptoMail API
+        Mail::extend('zeptomail', fn (array $config) => new ZeptoMailTransport(
+            (string) ($config['key'] ?? ''),
+            $config['host'] ?? 'api.zeptomail.in',
+        ));
     }
 }
