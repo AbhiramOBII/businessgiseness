@@ -6,6 +6,8 @@
 
 @section('content')
 <div class="space-y-6">
+    @include('admin.community._tabs')
+
     <div class="flex flex-wrap justify-between items-center gap-4">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Meetups</h2>

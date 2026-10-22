@@ -48,6 +48,13 @@ Route::get('/blog/{blogPost:slug}', [\App\Http\Controllers\BlogController::class
 
 // BG Community (business networking meetups)
 Route::get('/bg-community', [\App\Http\Controllers\CommunityController::class, 'index'])->name('community.index');
+// Membership registration + email confirmation (declared before the {event:slug} route)
+Route::post('/bg-community/join', [\App\Http\Controllers\CommunityMemberController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('community.members.store');
+Route::get('/bg-community/verify/{member}/{hash}', [\App\Http\Controllers\CommunityMemberController::class, 'verify'])
+    ->middleware('throttle:20,1')
+    ->name('community.members.verify');
 Route::get('/bg-community/{event:slug}', [\App\Http\Controllers\CommunityController::class, 'show'])->name('community.show');
 Route::post('/bg-community/{event:slug}/register', [\App\Http\Controllers\CommunityController::class, 'register'])
     ->middleware('throttle:6,1')
@@ -101,6 +108,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // BG Community meetups and sign-ups
     Route::resource('community-events', \App\Http\Controllers\Admin\CommunityEventController::class)->parameters(['community-events' => 'communityEvent']);
     Route::get('community-events/{communityEvent}/export', [\App\Http\Controllers\Admin\CommunityEventController::class, 'export'])->name('community-events.export');
+    Route::get('community-members', [\App\Http\Controllers\Admin\CommunityMemberController::class, 'index'])->name('community-members.index');
+    Route::get('community-members/export', [\App\Http\Controllers\Admin\CommunityMemberController::class, 'export'])->name('community-members.export');
+    Route::post('community-members/{member}/resend', [\App\Http\Controllers\Admin\CommunityMemberController::class, 'resend'])->name('community-members.resend');
+    Route::delete('community-members/{member}', [\App\Http\Controllers\Admin\CommunityMemberController::class, 'destroy'])->name('community-members.destroy');
     Route::delete('community-events/{communityEvent}/registrations/{registration}', [\App\Http\Controllers\Admin\CommunityEventController::class, 'destroyRegistration'])->name('community-events.registrations.destroy');
     
     // Guest Management

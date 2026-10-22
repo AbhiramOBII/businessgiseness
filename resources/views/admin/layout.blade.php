@@ -82,7 +82,7 @@
                     Blog Posts
                 </a>
 
-                <a href="{{ route('admin.community-events.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.community-events.*') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
+                <a href="{{ route('admin.community-events.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-brand-gold hover:bg-opacity-10 hover:text-brand-gold transition-colors duration-200 {{ request()->routeIs('admin.community-events.*', 'admin.community-members.*') ? 'bg-brand-gold bg-opacity-10 text-brand-gold border-r-2 border-brand-gold' : '' }}">
                     <i class="fas fa-handshake mr-3"></i>
                     BG Community
                 </a>

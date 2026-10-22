@@ -49,11 +49,11 @@
                 customers and suppliers, and grow together.
             </p>
             <div class="mt-10 flex flex-col sm:flex-row gap-3">
-                <a href="#meetups" class="inline-flex items-center justify-center gap-2 rounded-full bg-brand-gold hover:bg-yellow-500 text-brand-dark font-bold px-7 py-3.5 transition-colors">
-                    <i class="far fa-calendar-check" aria-hidden="true"></i> See upcoming meetups
+                <a href="#join" class="inline-flex items-center justify-center gap-2 rounded-full bg-brand-gold hover:bg-yellow-500 text-brand-dark font-bold px-7 py-3.5 transition-colors">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i> Join BG Community
                 </a>
-                <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 hover:border-brand-gold text-white font-semibold px-7 py-3.5 transition-colors">
-                    How it works
+                <a href="#meetups" class="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 hover:border-brand-gold text-white font-semibold px-7 py-3.5 transition-colors">
+                    <i class="far fa-calendar-check" aria-hidden="true"></i> Upcoming meetups
                 </a>
             </div>
         </div>
@@ -77,6 +77,8 @@
             @endforeach
         </div>
     </section>
+
+    @include('community.partials.join-form')
 
     {{-- ── Upcoming meetups ─────────────────────────────────────── --}}
     <section id="meetups" class="py-20 bg-gray-50 scroll-mt-24">
